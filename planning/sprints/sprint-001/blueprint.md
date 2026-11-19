@@ -1,0 +1,3 @@
+# Sprint 001 blueprint
+
+FastAPI terrain server downloads fixed-host Terrarium tile PNGs, assembles sampled DEM and edits PNG RGB for a scenario. MapLibre loads imagery/street styles, raster-dem layer and depth image source. Worker steps local-inertial depth model, renders overlay every ~100 ms and maintains arrival/peak metadata. User edits update typed grid arrays; server stores absolute per-cell elevation delta, bumps tile source revision, worker resets. Single static HTML/CSS/JS app for repeatable Docker packaging. API inputs range-checked. README and model documentation emphasize prototype status.
