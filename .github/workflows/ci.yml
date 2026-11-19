@@ -26,6 +26,7 @@ jobs:
         run: |
           node --check web/app.js
           node --check web/simulation-worker.js
+          node tests/worker-test.cjs
       - name: Check required project files
         run: |
           test -f AGENTS.md
