@@ -2,7 +2,7 @@
 (() => {
   'use strict';
   const $ = id => document.getElementById(id);
-  const TOOLS = new Set(['inspect', 'source', 'dig', 'raise']);
+  const TOOLS = new Set(['inspect', 'source', 'dig', 'raise', 'transect']);
   const SITES = {
     canyon: {lat: 36.9369, lon: -111.4838},
     tuttle: {lat: 39.2643, lon: -96.5903},
@@ -19,6 +19,7 @@
   let map, worker, scenario = null, base = null, deltas = null;
   let depth = null, peak = null, arrival = null, sourceIndex = -1, probeIndex = -1;
   let selectedTool = 'inspect', depthMode = 'live', styleMode = 'satellite';
+  let stations = [], sampleEnd = -1, globeView = false;
   let terrain3d = true, running = false, loading = false, isPainting = false;
   let strokeCells = new Set(), changedCells = new Map(), revision = 0;
   let elapsed = 0, renderTimer = 0, lastFrame = null, toastTimer = null;
@@ -52,8 +53,8 @@
     document.querySelectorAll('[data-tool]').forEach(el => el.classList.toggle('active', el.dataset.tool === tool));
     const editing = tool === 'dig' || tool === 'raise';
     $('sculpt-cursor').style.display = 'none';
-    map.getCanvas().style.cursor = editing ? 'crosshair' : tool === 'source' ? 'copy' : 'crosshair';
-    status(editing ? 'Drag to sculpt terrain' : tool === 'source' ? 'Click map to place release' : 'Click map to inspect');
+    map.getCanvas().style.cursor = editing ? 'crosshair' : tool === 'source' || tool === 'transect' ? 'copy' : 'crosshair';
+    status(editing ? 'Drag to sculpt terrain' : tool === 'source' ? 'Click map to place release' : tool === 'transect' ? 'Click downstream endpoint for sample stations' : 'Click map to inspect');
   }
   function toCell(lngLat) {
     if (!scenario) return -1;
@@ -82,10 +83,10 @@
     if (!scenario || !map.isStyleLoaded()) return;
     // DEM refresh: remove the former terrain source before adding its new revision.
     if (map.getTerrain()) map.setTerrain(null);
-    ['probe-marker','source-marker','study-outline','flood-layer'].forEach(id => {
+    ['station-labels','station-markers','sample-line-layer','probe-marker','source-marker','study-outline','flood-layer'].forEach(id => {
       if (map.getLayer(id)) map.removeLayer(id);
     });
-    ['probe-data','source-data','study-area','flood-image','scenario-dem'].forEach(id => {
+    ['station-data','sample-line-data','probe-data','source-data','study-area','flood-image','scenario-dem'].forEach(id => {
       if (map.getSource(id)) map.removeSource(id);
     });
     map.addSource('scenario-dem', {
@@ -110,7 +111,81 @@
     map.addSource('probe-data',{type:'geojson',data:pointGeoJSON(probeIndex)});
     map.addLayer({id:'probe-marker',type:'circle',source:'probe-data',
       paint:{'circle-radius':5,'circle-color':'#fff','circle-stroke-width':2,'circle-stroke-color':'#1c5762'}});
+    const line = stationLineGeoJSON();
+    map.addSource('sample-line-data',{type:'geojson',data:line});
+    map.addLayer({id:'sample-line-layer',type:'line',source:'sample-line-data',
+      paint:{'line-color':'#b8f9f9','line-width':2,'line-dasharray':[2,2]}});
+    map.addSource('station-data',{type:'geojson',data:stationGeoJSON()});
+    map.addLayer({id:'station-markers',type:'circle',source:'station-data',
+      paint:{'circle-radius':4,'circle-color':'#061822','circle-stroke-width':2,'circle-stroke-color':'#b3ffff'}});
+    map.addLayer({id:'station-labels',type:'symbol',source:'station-data',
+      layout:{'text-field':['get','distance'],'text-size':11,'text-offset':[0,1.5],'text-allow-overlap':false},
+      paint:{'text-color':'#edffff','text-halo-color':'#071a24','text-halo-width':2}});
     if (lastFrame) updateOverlay();
+  }
+  function stationLineGeoJSON() {
+    return {type:'FeatureCollection',features:sampleEnd>=0 && sourceIndex>=0 ? [{
+      type:'Feature',properties:{},geometry:{type:'LineString',
+        coordinates:[cellLatLon(sourceIndex),cellLatLon(sampleEnd)]}}] : []};
+  }
+  function stationGeoJSON() {
+    return {type:'FeatureCollection',features:stations.map(s=>({
+      type:'Feature',geometry:{type:'Point',coordinates:cellLatLon(s.index)},
+      properties:{distance:Math.round(s.distance)+'m'}}))};
+  }
+  function createTransect(index) {
+    if(sourceIndex<0) {notify('Place a water source before drawing a sample line.',true);selectTool('source');return;}
+    if(index<0) {notify('Choose a point inside the outlined study area.',true);return;}
+    sampleEnd=index;
+    const origin=cellLatLon(sourceIndex), end=cellLatLon(index);
+    const x=(end[0]-origin[0])*111320*Math.cos((origin[1]+end[1])/2*Math.PI/180);
+    const y=(end[1]-origin[1])*111320;
+    const length=Math.hypot(x,y);
+    if(length<100){notify('Choose an endpoint at least 100 meters from the source.',true);return;}
+    const spacing=Number($('station-spacing').value);
+    stations=[];const used=new Set();
+    for(let d=0;d<=length;d+=spacing){
+      const t=d/length;
+      const i=toCell({lng:origin[0]+(end[0]-origin[0])*t,
+        lat:origin[1]+(end[1]-origin[1])*t});
+      if(i>=0&&!used.has(i)){stations.push({index:i,distance:d});used.add(i);}
+    }
+    if(!used.has(index))stations.push({index,distance:length});
+    if(map.getSource('sample-line-data'))map.getSource('sample-line-data').setData(stationLineGeoJSON());
+    if(map.getSource('station-data'))map.getSource('station-data').setData(stationGeoJSON());
+    updateStations();
+    selectTool('inspect');
+    notify(stations.length+' modeled depth stations placed at ~'+spacing+' m increments.');
+  }
+  function updateStations() {
+    const node=$('stations');node.replaceChildren();
+    if(!scenario||stations.length===0){
+      const empty=document.createElement('span');empty.className='stations-empty';
+      empty.textContent='No sample line placed';node.appendChild(empty);return;
+    }
+    const title=document.createElement('div');title.className='station-head';
+    title.textContent='DISTANCE     PEAK DEPTH     WATER LEVEL';node.appendChild(title);
+    for(const s of stations){
+      const row=document.createElement('div');row.className='station-row';
+      const z=base[s.index]+deltas[s.index],h=peak?peak[s.index]:0;
+      for(const text of [Math.round(s.distance)+' m',h.toFixed(2)+' m',(z+h).toFixed(1)+' m']){
+        const cell=document.createElement('span');cell.textContent=text;row.appendChild(cell);
+      }
+      node.appendChild(row);
+    }
+  }
+  function exportStations() {
+    if(!scenario||stations.length===0){notify('Draw a sample line before exporting readings.',true);return;}
+    const lines=['distance_m,latitude,longitude,ground_m,peak_depth_m,peak_water_surface_m,first_wet_s'];
+    for(const s of stations){
+      const [lng,lat]=cellLatLon(s.index),z=base[s.index]+deltas[s.index],h=peak?peak[s.index]:0;
+      const t=arrival?arrival[s.index]:-1;
+      lines.push([s.distance.toFixed(1),lat.toFixed(6),lng.toFixed(6),z.toFixed(2),
+        h.toFixed(3),(z+h).toFixed(3),t>=0?t.toFixed(1):''].join(','));
+    }
+    const url=URL.createObjectURL(new Blob([lines.join('\n')+'\n'],{type:'text/csv'}));
+    const a=document.createElement('a');a.href=url;a.download='waterflow-stations.csv';a.click();
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
   }
   function emptyImage() {
     context.clearRect(0,0,overlay.width,overlay.height);
@@ -139,6 +214,10 @@
     $('source-position').textContent = cellLatLon(index).slice().reverse().map(n => n.toFixed(4)).join(', ');
     const data = map.getSource('source-data');
     if (data) data.setData(pointGeoJSON(index));
+    sampleEnd=-1;stations=[];
+    if(map.getSource('sample-line-data'))map.getSource('sample-line-data').setData(stationLineGeoJSON());
+    if(map.getSource('station-data'))map.getSource('station-data').setData(stationGeoJSON());
+    updateStations();
     resetSimulation();
     selectTool('inspect');
     notify('Release location placed. Set discharge and run the model.');
@@ -215,7 +294,7 @@
       scenario.cellSize = payload.cellSize;
       base = Float32Array.from(payload.elevation);
       deltas = new Float32Array(base.length);
-      sourceIndex = -1; probeIndex = -1; lastFrame = null; revision = 0; depth = peak = arrival = null;
+      sourceIndex = -1; probeIndex = -1; sampleEnd=-1;stations=[];lastFrame = null; revision = 0; depth = peak = arrival = null;
       $('source-position').textContent = 'Not placed';
       $('dem-detail').textContent = 'Mapzen DEM · ' + payload.cellSize.toFixed(1) + ' m cells';
       $('elev-detail').textContent = Math.round(payload.min) + '–' + Math.round(payload.max) + ' m';
@@ -224,6 +303,7 @@
       map.flyTo({center:[lon,lat],zoom:extent >= 10000 ? 12.5 : extent >= 8000 ? 13 : 14,
         pitch:64,bearing:-28,duration:1200,essential:true});
       if (map.isStyleLoaded()) setupScenarioLayers();
+      updateStations();
       selectTool('inspect');
       status('Real terrain loaded · experimental model');
     } catch (error) { fail(error); }
@@ -278,6 +358,7 @@
         revision=result.revision;
       }
       resetSimulation();
+      updateStations();
       if (map.isStyleLoaded()) setupScenarioLayers();
       notify(changes.length.toLocaleString()+' terrain cells reshaped. Simulation reset.');
       status('Terrain edited · experimental model');
@@ -293,6 +374,7 @@
       source:'Mapzen AWS DEM',lat:scenario.bounds[3]-(scenario.bounds[3]-scenario.bounds[1])/2,
       lon:(scenario.bounds[0]+scenario.bounds[2])/2,extent:scenario.extent,resolution:scenario.width,
       sourceCoordinates:sourceIndex < 0 ? null : cellLatLon(sourceIndex),
+      transectEnd:sampleEnd < 0 ? null : cellLatLon(sampleEnd),sampleIntervalM:Number($('station-spacing').value),
       dischargeM3s:Number($('discharge').value),releaseMinutes:Number($('duration').value),terrainEdits:edited,
       warning:'This is not a calibrated dam breach or engineering flood forecast.'
     };
@@ -314,7 +396,7 @@
       lastFrame=frame;
       refreshStats(frame);
       if(performance.now()-lastFrameTime>115){
-        updateOverlay();lastFrameTime=performance.now();
+        updateOverlay();updateStations();lastFrameTime=performance.now();
       }
     };
   }
@@ -329,6 +411,8 @@
     $('run').addEventListener('click',startOrPause);
     $('reset').addEventListener('click',()=>{resetSimulation();status('Simulation reset');});
     $('export').addEventListener('click',saveScenario);
+    $('export-csv').addEventListener('click',exportStations);
+    $('station-spacing').addEventListener('input',()=>{$('station-spacing-value').textContent=$('station-spacing').value+' m';});
     $('brush-radius').addEventListener('input',()=>{$('brush-radius-value').textContent=$('brush-radius').value+' m';});
     $('brush-strength').addEventListener('input',()=>{$('brush-strength-value').textContent=$('brush-strength').value+' m';});
     $('duration').addEventListener('input',()=>{$('duration-value').textContent=$('duration').value+' min';if(scenario)resetSimulation();});
@@ -338,6 +422,13 @@
     $('hide-ui').addEventListener('click',()=>{document.body.classList.toggle('ui-hidden');map.resize();});
     $('satellite').addEventListener('click',()=>setMapStyle('satellite'));
     $('streets').addEventListener('click',()=>setMapStyle('streets'));
+    $('globe-toggle').addEventListener('click',()=>{
+      globeView=!globeView;
+      $('globe-toggle').classList.toggle('selected',globeView);
+      map.setProjection({type:globeView?'globe':'mercator'});
+      if(globeView)map.easeTo({zoom:Math.min(map.getZoom(),5),pitch:20,duration:900});
+      else if(scenario)map.easeTo({center:[scenario.lon,scenario.lat],zoom:13.5,pitch:64,duration:900});
+    });
     $('terrain-toggle').addEventListener('click',()=>{
       terrain3d=!terrain3d;
       $('terrain-toggle').classList.toggle('selected',terrain3d);
@@ -379,6 +470,7 @@
       const index=toCell(event.lngLat);
       if(selectedTool==='source')setSource(index);
       else if(selectedTool==='inspect')inspect(index);
+      else if(selectedTool==='transect')createTransect(index);
       else if(selectedTool==='dig' || selectedTool==='raise'){
         // Allows a single click or touch tap to sculpt.
         changedCells.clear();strokeCells.clear();paint(event.lngLat);

@@ -49,6 +49,7 @@
         <button class="tool" data-tool="source"><span class="tool-icon">◉</span><span>Source</span></button>
         <button class="tool" data-tool="dig"><span class="tool-icon">−</span><span>Excavate</span></button>
         <button class="tool" data-tool="raise"><span class="tool-icon">+</span><span>Raise</span></button>
+        <button class="tool" data-tool="transect"><span class="tool-icon">↗</span><span>Sample line</span></button>
       </div>
       <div class="slider-row"><label for="brush-radius">BRUSH RADIUS</label><output id="brush-radius-value">100 m</output></div>
       <input id="brush-radius" class="range" type="range" min="25" max="400" value="100" step="25">
@@ -67,13 +68,20 @@
       <p class="helper">Prescribed point discharge. This is <strong>not</strong> a computed dam-breach hydrograph.</p>
       <div class="run-row"><button id="run" class="run-button"><span id="run-icon">▶</span><span id="run-label">Run simulation</span></button><button id="reset" class="secondary-button" title="Reset simulation" aria-label="Reset simulation">↺</button></div>
     </section>
+    <div class="divider"></div>
+    <section class="section sample-section"><div class="section-heading"><span class="section-index">04</span><h2>DOWNSTREAM STATIONS</h2></div>
+      <div class="slider-row"><label for="station-spacing">SAMPLE EVERY</label><output id="station-spacing-value">250 m</output></div>
+      <input id="station-spacing" class="range" type="range" min="100" max="1000" step="50" value="250">
+      <p class="helper">Place a source, choose Sample line, then click a downstream endpoint. Samples follow a straight-line transect, not an inferred river course.</p>
+      <button id="export-csv" class="text-link station-export">↓ Download station readings CSV</button>
+    </section>
     <div class="sidebar-foot"><button id="export" class="text-link">↓ Download scenario JSON</button><span>v0.1.0</span></div>
   </aside>
 
   <div class="layer-switch" role="group" aria-label="Map appearance">
     <button id="satellite" class="selected">SATELLITE</button><button id="streets">MAP</button>
     <span class="switch-divider"></span>
-    <button id="terrain-toggle" class="selected">3D TERRAIN</button>
+    <button id="terrain-toggle" class="selected">3D TERRAIN</button><button id="globe-toggle">GLOBE</button>
   </div>
   <div class="sculpt-cursor" id="sculpt-cursor" aria-hidden="true"></div>
 
@@ -87,7 +95,7 @@
       <div><span>MAX WATER LEVEL</span><strong id="water-level-number">—</strong></div>
       <div><span>FIRST WET</span><strong id="arrival-number">—</strong></div>
     </div>
-    <div class="inspector-hint" id="inspect-hint">Choose Inspect, then click on the map.</div>
+    <div class="inspector-hint" id="inspect-hint">Choose Inspect, then click on the map.</div><div class="stations" id="stations"><span class="stations-empty">No sample line placed</span></div>
   </section>
 
   <footer class="timeline">
