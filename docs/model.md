@@ -9,3 +9,10 @@ Future credible dam study: choose upstream reservoir polygon and lake level, sup
 ## Station sampling
 
 Users choose a straight segment from source to downstream endpoint. Model cells nearest to requested meter increments are read for peak depth, modeled maximum water-surface elevation, and wetting time. This is a user-defined geographic transect, not a hydrologically extracted thalweg. Stations can cross ridges or flow discontinuities. Do not treat stations as surveyed high-water marks.
+
+
+## Passive drifting marker (v0.2)
+
+The movie-mode marker is a **passive surface tracer approximation**, not a separate raft dynamics model. The worker samples signed east and south face discharge (m²/s), converts neighboring averaged face values to approximate depth-averaged velocity (m/s), and uses bilinear interpolation at the marker. Travel uses substeps no larger than about 0.35 cell widths. The numerical safety cap is 20 m/s (not a physically validated flood-speed limit). Depths below 0.1 m strand the tracker, and an out-of-area position ends the route. The marker adds no water volume and cannot alter the hydraulic solver.
+
+The illustrated person and raft are presentation assets only. Wind, buoyancy, paddling, turbulence, collisions, bridges, debris and safe passage are not modeled. Cinematic numerical stepping is paced near 8 simulated seconds per real second. The browser stores the latest 4,500 sampled positions for replay. Replay interpolates these saved coordinates while the water-depth layer remains at the latest simulated frame; it is not synchronized flood reconstruction.

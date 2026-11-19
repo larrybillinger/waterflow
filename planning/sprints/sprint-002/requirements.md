@@ -1,0 +1,3 @@
+# Sprint 002 requirements
+
+Offer a clearly identified cinematic mode on the existing full-screen 3D map. User can tag a wet simulated water location and watch a raft-with-rider or luminous water marker follow modeled water movement. Must use estimated hydraulic flux to advance a marker, not invented downhill paths. Provide chase, aerial, wide and free camera controls, slower cinematic pacing, a route timeline for replay/scrubbing, simulated velocity/depth/distance readings and CSV export. Maintain existing terrain editing and flow controls. No new backend auth, no MP4 claims, no engineering prediction claims.

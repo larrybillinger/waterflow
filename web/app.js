@@ -2,7 +2,7 @@
 (() => {
   'use strict';
   const $ = id => document.getElementById(id);
-  const TOOLS = new Set(['inspect', 'source', 'dig', 'raise', 'transect']);
+  const TOOLS = new Set(['inspect', 'source', 'dig', 'raise', 'transect', 'tag']);
   const SITES = {
     canyon: {lat: 36.9369, lon: -111.4838},
     tuttle: {lat: 39.2643, lon: -96.5903},
@@ -16,7 +16,7 @@
     layers: [{id: 'satellite-base', type: 'raster', source: 'imagery'}]
   };
   const streetStyle = 'https://tiles.openfreemap.org/styles/liberty';
-  let map, worker, scenario = null, base = null, deltas = null;
+  let map, worker, movie = null, scenario = null, base = null, deltas = null;
   let depth = null, peak = null, arrival = null, sourceIndex = -1, probeIndex = -1;
   let selectedTool = 'inspect', depthMode = 'live', styleMode = 'satellite';
   let stations = [], sampleEnd = -1, globeView = false;
@@ -54,8 +54,8 @@
     document.querySelectorAll('[data-tool]').forEach(el => el.classList.toggle('active', el.dataset.tool === tool));
     const editing = tool === 'dig' || tool === 'raise';
     $('sculpt-cursor').style.display = 'none';
-    map.getCanvas().style.cursor = editing ? 'crosshair' : tool === 'source' || tool === 'transect' ? 'copy' : 'crosshair';
-    status(editing ? 'Drag to sculpt terrain' : tool === 'source' ? 'Click map to place release' : tool === 'transect' ? 'Click downstream endpoint for sample stations' : 'Click map to inspect');
+    map.getCanvas().style.cursor = editing ? 'crosshair' : ['source','transect','tag'].includes(tool) ? 'copy' : 'crosshair';
+    status(editing ? 'Drag to sculpt terrain' : tool === 'source' ? 'Click map to place release' : tool === 'transect' ? 'Click downstream endpoint for sample stations' : tool === 'tag' ? 'Click a wet cell to place a floating tracker' : 'Click map to inspect');
   }
   function toCell(lngLat) {
     if (!scenario) return -1;
@@ -84,10 +84,10 @@
     if (!scenario || !map.isStyleLoaded()) return;
     // DEM refresh: remove the former terrain source before adding its new revision.
     if (map.getTerrain()) map.setTerrain(null);
-    ['station-labels','station-markers','sample-line-layer','probe-marker','source-marker','study-outline','flood-layer'].forEach(id => {
+    ['movie-trail','station-labels','station-markers','sample-line-layer','probe-marker','source-marker','study-outline','flood-layer'].forEach(id => {
       if (map.getLayer(id)) map.removeLayer(id);
     });
-    ['station-data','sample-line-data','probe-data','source-data','study-area','flood-image','scenario-dem'].forEach(id => {
+    ['movie-trail-data','station-data','sample-line-data','probe-data','source-data','study-area','flood-image','scenario-dem'].forEach(id => {
       if (map.getSource(id)) map.removeSource(id);
     });
     map.addSource('scenario-dem', {
@@ -122,6 +122,7 @@
     map.addLayer({id:'station-labels',type:'symbol',source:'station-data',
       layout:{'text-field':['get','distance'],'text-size':11,'text-offset':[0,1.5],'text-allow-overlap':false},
       paint:{'text-color':'#edffff','text-halo-color':'#071a24','text-halo-width':2}});
+    if (movie) movie.setupLayers();
     if (lastFrame) updateOverlay();
   }
   function stationLineGeoJSON() {
@@ -252,11 +253,13 @@
   }
   function stop() {
     running = false; worker.postMessage({type:'pause'});
+    if(movie)movie.setRunning(false);
     $('run-label').textContent = 'Resume simulation'; $('run-icon').textContent = '▶';
   }
   function resetSimulation() {
     if (!scenario || !worker) return;
     running = false;
+    if(movie){movie.setRunning(false);movie.reset();}
     $('run-label').textContent = 'Run simulation'; $('run-icon').textContent = '▶';
     worker.postMessage({type:'init',width:scenario.width,height:scenario.height,cellSize:scenario.cellSize,
       elevation:Float32Array.from(base, (v,i) => v + deltas[i]).buffer});
@@ -271,6 +274,7 @@
       notify('Discharge must be between 1 and 50,000 m³/s.', true); return;
     }
     running = true;
+    if(movie)movie.setRunning(true);
     worker.postMessage({type:'config',index:sourceIndex,discharge,duration:duration*60});
     worker.postMessage({type:'start'});
     $('run-label').textContent = 'Pause simulation'; $('run-icon').textContent = 'Ⅱ';
@@ -291,6 +295,7 @@
         body:JSON.stringify({lat,lon,extent,resolution})});
       const payload = await response.json();
       if (!response.ok) throw new Error(payload.error || 'Terrain service failed');
+      if(movie){movie.exit();movie.reset();movie.setRunning(false);}
       scenario = payload;
       scenario.cellSize = payload.cellSize;
       base = Float32Array.from(payload.elevation);
@@ -390,12 +395,15 @@
     worker.onerror=event=>{fail(new Error('Simulation worker crashed: '+event.message));stop();};
     worker.onmessage=event=>{
       const frame=event.data;
-      if(frame.type==='stopped'){running=false;$('run-label').textContent='Run simulation';$('run-icon').textContent='▶';status('6-hour simulation limit reached');return;}
+      if(frame.type==='trackRejected'){if(movie)movie.rejected(frame);return;}
+      if(frame.type==='trackPlaced'){if(movie)movie.placed();return;}
+      if(frame.type==='stopped'){running=false;if(movie)movie.setRunning(false);$('run-label').textContent='Run simulation';$('run-icon').textContent='▶';status('6-hour simulation limit reached');return;}
       if(frame.type!=='frame')return;
       depth=new Float32Array(frame.depth);
       peak=new Float32Array(frame.peak);
       arrival=new Float32Array(frame.arrival);
       lastFrame=frame;
+      if(movie)movie.onFrame(frame);
       refreshStats(frame);
       if(performance.now()-lastFrameTime>115){
         updateOverlay();updateStations();lastFrameTime=performance.now();
@@ -464,6 +472,10 @@
       attributionControl:true
     });
     map.addControl(new maplibregl.NavigationControl({visualizePitch:true}),'top-right');
+    movie = new window.WaterflowMovie.MovieMode({
+      map,worker,getScenario:()=>scenario,
+      notify,pause:()=>{if(running)stop();},toggleRun:startOrPause,selectTool
+    });
     map.on('style.load',()=>{if(scenario)setupScenarioLayers();});
     map.once('load',loadArea);
     map.on('error',event=>{
@@ -481,6 +493,11 @@
       if(selectedTool==='source')setSource(index);
       else if(selectedTool==='inspect')inspect(index);
       else if(selectedTool==='transect')createTransect(index);
+      else if(selectedTool==='tag'){
+        if(index<0 || !depth || depth[index]<0.1)
+          notify('Tag a currently wet modeled water cell (at least 0.1 m deep).',true);
+        else if(movie)movie.place(index);
+      }
       else if((selectedTool==='dig' || selectedTool==='raise') && performance.now() >= suppressSculptClickUntil){
         // Touch tap has no desktop mousedown; desktop strokes already applied.
         changedCells.clear();strokeCells.clear();paint(event.lngLat);

@@ -14,7 +14,7 @@ from . import terrain
 
 logger = logging.getLogger("waterflow")
 ROOT = Path(__file__).resolve().parent.parent
-app = FastAPI(title="Waterflow Terrain Lab", version="0.1.0", docs_url=None, redoc_url=None)
+app = FastAPI(title="Waterflow Terrain Lab", version="0.2.0", docs_url=None, redoc_url=None)
 app.add_middleware(GZipMiddleware, minimum_size=1024)
 
 
@@ -36,7 +36,7 @@ class EditRequest(BaseModel):
 
 @app.get("/api/health")
 def health() -> dict[str, str]:
-    return {"status": "ok", "version": "0.1.0"}
+    return {"status": "ok", "version": "0.2.0"}
 
 
 @app.post("/api/scenarios")

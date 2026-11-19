@@ -11,6 +11,7 @@
   <link href="https://unpkg.com/maplibre-gl@6.19.0/dist/maplibre-gl.css" rel="stylesheet">
   <link href="/static/app.css" rel="stylesheet">
   <script src="https://unpkg.com/maplibre-gl@6.19.0/dist/maplibre-gl.js" defer></script>
+  <script src="/static/movie.js" defer></script>
   <script src="/static/app.js" defer></script>
 </head>
 <body>
@@ -18,7 +19,7 @@
   <div class="map-vignette" aria-hidden="true"></div>
 
   <header class="topbar">
-    <div class="wordmark"><span class="brand-icon" aria-hidden="true">≋</span><span>WATERFLOW</span><span class="build-label">LAB / 01</span></div>
+    <div class="wordmark"><span class="brand-icon" aria-hidden="true">≋</span><span>WATERFLOW</span><span class="build-label">LAB / 02</span></div>
     <div class="topright"><span class="status-dot"></span><span id="status">Initializing map</span>
       <button id="hide-ui" class="icon-button" title="Show or hide tools" aria-label="Show or hide tools">◧</button>
     </div>
@@ -75,6 +76,16 @@
       <p class="helper">Place a source, choose Sample line, then click a downstream endpoint. Samples follow a straight-line transect, not an inferred river course.</p>
       <button id="export-csv" class="text-link station-export">↓ Download station readings CSV</button>
     </section>
+    <div class="divider"></div>
+    <section class="section movie-section">
+      <div class="section-heading"><span class="section-index">05</span><h2>CINEMATIC FOLLOW</h2></div>
+      <button id="movie-enter" class="cinema-launch">
+        <span class="cinema-glyph" aria-hidden="true">▶</span>
+        <span><strong>Enter movie mode</strong><small>Ride the modeled flood downstream</small></span>
+        <span class="cinema-arrow">↗</span>
+      </button>
+      <p class="helper">Follow a tagged water point or a rider on a raft. The path is an experimental fluid tracer, not a navigable route.</p>
+    </section>
     <div class="sidebar-foot"><button id="export" class="text-link">↓ Download scenario JSON</button><span>v0.1.0</span></div>
   </aside>
 
@@ -108,6 +119,42 @@
     <div class="timeline-track"><div class="timeline-fill" id="timeline-fill"></div></div>
     <div class="legend"><span>DEPTH</span><div class="gradient"></div><span>0.1 m</span><span>0.5 m</span><span>2 m</span><span>5 m+</span><span class="legend-note">3D shading shows model estimates, not observed flood marks.</span></div>
   </footer>
+
+  <aside id="movie-hud" class="movie-hud" aria-label="Movie mode controls" hidden>
+    <div class="movie-heading"><div><span class="eyebrow">WATERFLOW / CINEMA</span><strong>Follow the current</strong></div>
+      <span id="movie-state" class="movie-state">CLICK WET WATER TO TAG</span>
+      <button id="movie-exit" class="movie-close" aria-label="Exit movie mode" title="Exit movie mode">✕</button>
+    </div>
+    <div class="movie-measures">
+      <div><span>SIMULATED TIME</span><strong id="movie-time">—</strong></div>
+      <div><span>FLOW VELOCITY</span><strong id="movie-flow">—</strong></div>
+      <div><span>TRAVELED</span><strong id="movie-travel">—</strong></div>
+      <div><span>WATER DEPTH</span><strong id="movie-depth">—</strong></div>
+    </div>
+    <div class="movie-control-row">
+      <button id="movie-tag" class="movie-primary">⌖ TAG WATER</button>
+      <div class="movie-segment"><button id="movie-raft" class="selected">RAFT + RIDER</button><button id="movie-tracer">WATER DOT</button></div>
+    </div>
+    <div class="movie-control-row">
+      <button id="movie-follow" class="movie-control selected">◉ FOLLOW ON</button>
+      <button id="movie-camera" class="movie-control">CAMERA · CHASE</button>
+      <button id="movie-run" class="movie-control">▶ RUN FLOW</button>
+    </div>
+    <div class="movie-playback">
+      <div class="movie-playback-heading"><span>TRACKED ROUTE</span><span id="movie-range">No route recorded</span></div>
+      <input id="movie-scrub" aria-label="Replay position" type="range" min="0" max="1000" step="1" value="0">
+      <div class="movie-playback-actions">
+        <button id="movie-replay" class="movie-control" disabled>▶ REPLAY PATH</button>
+        <label for="movie-speed">PLAYBACK<select id="movie-speed">
+          <option value="1">1×</option><option value="10" selected>10×</option>
+          <option value="30">30×</option><option value="60">60×</option>
+        </select></label>
+        <button id="movie-save" class="movie-control">↓ CSV</button>
+        <button id="movie-clear" class="movie-control">↺ CLEAR</button>
+      </div>
+    </div>
+    <p id="movie-caveat" class="movie-caveat">Passive tracer follows modeled water flow; not an actual raft forecast.</p>
+  </aside>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
   <div id="loading" class="loading hidden" aria-live="polite"><div class="loader"></div><strong>Preparing elevation model</strong><span>Loading public terrain data…</span></div>

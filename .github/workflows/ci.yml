@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - feature/3d-flood-lab-v0.1
+      - feature/cinematic-flow-tracker-v0.2
   pull_request:
 
 jobs:
@@ -26,6 +27,9 @@ jobs:
         run: |
           node --check web/app.js
           node --check web/simulation-worker.js
+          node --check web/flow-tracker.js
+          node --check web/movie.js
+          node tests/flow-tracker-test.cjs
           node tests/worker-test.cjs
       - name: Check required project files
         run: |

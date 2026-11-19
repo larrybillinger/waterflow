@@ -1,6 +1,6 @@
 # Architecture
 
-Browser: MapLibre GL JS WebGL map, raster and 3D DEM terrain; image-source draped flood overlay and GeoJSON study rectangle, source/inspection point, and optional straight-line stations. Standalone module-free JavaScript in web/app.js. Worker web/simulation-worker.js runs water routing away from the UI thread.
+Browser: MapLibre GL JS WebGL map, raster and 3D DEM terrain; image-source draped flood overlay and GeoJSON study rectangle, source/inspection point, and optional straight-line stations. Standalone module-free JavaScript in web/app.js. Worker web/simulation-worker.js runs water routing away from the UI thread. The passive route tracker in web/flow-tracker.js derives marker velocity from signed face flux; web/movie.js handles the camera, map marker and path replay.
 
 Server: FastAPI serves static web assets, bounds validated scenario requests, downloads public AWS/Mapzen Terrarium PNG tiles, samples DEM cell centers and hosts edited DEM raster tiles under a session ID. Only the fixed upstream hostname is contacted. Tile cache is bounded LRU. Scenario grids are transient and limited to 12 sessions/1 hour. There is no database or login. Each scenario is identified by a random 128-bit opaque ID; treat it as a capability and avoid publicly exposing the service without authentication.
 

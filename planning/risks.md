@@ -8,3 +8,9 @@ MEDIUM: Demo is not authenticated; exposing HTTP outside localhost creates share
 MEDIUM: Satellite imagery visual appearance may obscure water heatmap; use explicit depth legend and probe values.
 MEDIUM: Numerical grid is limited to 256² at max 12 km domain; terrain details finer than cells are not represented.
 MEDIUM: Straight-line samples may cross ridges or leave the active flow corridor; measurements are cell-model estimates at unsurveyed points.
+
+HIGH: Lifelike chase framing may make unvalidated hydraulic simulation feel authoritative. Explicitly label passive tracker and no vessel safety prediction.
+MEDIUM: Coarse flux-derived velocities can misrepresent narrow channels, eddies and obstacles; capped speed is a stability measure, not survey data.
+MEDIUM: Replay flood shading remains at last simulation frame; it is not a time-synchronized flood movie.
+MEDIUM: Frequent camera movement and route line redraw may be slow on mobile GPUs.
+MEDIUM: Route samples in memory are bounded and cleared on resets; no persisted video or scenario restoration.
