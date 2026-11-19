@@ -46,6 +46,7 @@ function placeTracker(message) {
     depth:depth[i],distance:0,status:'floating'};
   pendingTrackPoints=[trackerSample()];
   previousTrackSampleTime=time;
+  self.postMessage({type:'trackPlaced'});
   publish();
 }
 function step() {
