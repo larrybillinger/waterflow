@@ -1,5 +1,21 @@
 # Changelog
 
+## v0.2.0 — 2026-11-19
+
+### Added
+- Immersive cinematic camera following a tagged wet model cell.
+- Stylized raft/rider and high-visibility water tracer modes.
+- Flux-derived passive marker tracking with dry-ground stranding and domain exit.
+- Chase, aerial, wide and free camera controls.
+- Reduced simulation pacing while filming, recorded route replay and scrub.
+- Export of modeled route position, water depth, speed, distance and state as CSV.
+- Automated tracer advection, boundary and path interpolation tests.
+
+### Limitations
+- Raft visual is not a physical flotation or collision model.
+- Replay does not rewind the depth shading; no downloadable video recording.
+- Browser performance and hydraulic validation remain unverified.
+
 ## v0.1.0 — 2026-11-19
 
 ### Added

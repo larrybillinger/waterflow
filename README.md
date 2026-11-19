@@ -2,9 +2,9 @@
 
 A full-screen, 3D, map-based terrain and flood experimentation lab. Fly across real-world terrain, excavate or raise land with a brush, release a hypothetical flow, and inspect animated depth, arrival time, and high-water levels.
 
-**Status: v0.1.0 experimental prototype. NOT a flood forecast, evacuation tool, or engineering-grade dam-break model.**
+**Status: v0.2.0 experimental prototype. NOT a flood forecast, evacuation tool, or engineering-grade dam-break model.**
 
-## What works in v0.1
+## What works in v0.2
 
 - Pitched, rotatable 3D earth-style map with satellite and street styles.
 - Public Mapzen/AWS elevation tiles provide the bare-earth digital elevation model (DEM); never substitute invented elevation on retrieval failures.
@@ -16,6 +16,9 @@ A full-screen, 3D, map-based terrain and flood experimentation lab. Fly across r
 - Draw a **straight-line sample transect** from the release point with stations every 100–1,000 m and download peak-depth/first-wetting measurements as CSV.
 - Optional whole-earth globe navigation in addition to local 3D terrain.
 - Download a scenario JSON snapshot. Simulations reset after terrain/source changes.
+- Cinema mode: tag a wet simulated water point, choose a visual raft with rider or a glowing tracer dot, and follow the modeled downstream flow through a smooth 3D camera.
+- Switch between chase, aerial and wide camera perspectives, or drag to return to free navigation.
+- Replay/scrub the recorded route at selectable speed, or export the path as CSV. Movie mode is in-browser playback, not an MP4 exporter.
 
 ## Run locally
 
@@ -42,9 +45,16 @@ Open http://localhost:8086. Change host port in compose before deploying alongsi
 3. Adjust discharge and release time; select **Run** to begin.
 4. Select **Inspect** to measure modeled depths on the map. Switch between live depth and maximum depth.
 5. Choose **Sample line**, click a downstream endpoint, and download station readings as CSV. The line does not automatically trace a river.
-6. Pause, reset, excavate, or raise ground to compare scenarios. Drag terrain brush on the map and release the pointer to apply the 3D terrain update.
+6. Select Enter movie mode (section 05). Run the simulation, click Tag water, then click inside a wet cell (at least 0.1 m deep) to drop the illustrated raft or water marker. The mode runs the physics at about 8 simulated seconds per real second for smoother viewing. Use Follow, camera presets or Replay path (after two or more samples).
+7. Pause, reset, excavate, or raise ground to compare scenarios. Drag terrain brush on the map and release the pointer to apply the 3D terrain update.
 
 The modeled rectangle is deliberately limited in size to keep real-time experimentation responsive. Zooming outside it still shows real-world terrain, but only the outlined area is simulated.
+
+## Cinematic tracking limits
+
+The tracked raft is **not** an independently modeled buoyant object or a route safe for watercraft. It is an illustrated marker following a passive surface-tracer approximation based on depth-averaged signed water flux between simulation cells. Real-world wind, eddies, paddling, collisions, obstacles, currents below grid resolution, and injury risk are not represented. The marker becomes stranded when water falls below 0.1 m and exits at the model boundary.
+
+The browser stores at most the latest 4,500 route samples. **Replay moves only the tracked marker; the flood-depth overlay stays at its latest simulated frame** and does not rewind. Neither video recording nor exported MP4 is included in v0.2.
 
 ## Model assumptions & important limitations
 
@@ -64,7 +74,7 @@ For credible real-world flood maps, integrate local USGS 3DEP 1 m/3 m terrain an
 
 ## Repository organization
 
-- web/ — full-screen map UI and Web Worker solver.
+- web/ — full-screen map UI, Web Worker solver, passive tracer, movie controller and illustrated raft asset.
 - server/ — FastAPI static host and DEM tile/scenario endpoints.
 - tests/ — DEM conversion, geometry and scenario API tests.
 - docs/ — architecture, model notes, permissions and validation.
