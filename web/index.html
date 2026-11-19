@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#071019">
+  <meta name="description" content="Waterflow — an immersive real-terrain 3D flood simulation lab.">
+  <title>Waterflow | 3D terrain laboratory</title>
+  <link rel="preconnect" href="https://unpkg.com">
+  <link rel="preconnect" href="https://server.arcgisonline.com">
+  <link href="https://unpkg.com/maplibre-gl@6.19.0/dist/maplibre-gl.css" rel="stylesheet">
+  <link href="/static/app.css" rel="stylesheet">
+  <script src="https://unpkg.com/maplibre-gl@6.19.0/dist/maplibre-gl.js" defer></script>
+  <script src="/static/app.js" defer></script>
+</head>
+<body>
+  <main id="map" aria-label="Interactive 3D terrain map"></main>
+  <div class="map-vignette" aria-hidden="true"></div>
+
+  <header class="topbar">
+    <div class="wordmark"><span class="brand-icon" aria-hidden="true">≋</span><span>WATERFLOW</span><span class="build-label">LAB / 01</span></div>
+    <div class="topright"><span class="status-dot"></span><span id="status">Initializing map</span>
+      <button id="hide-ui" class="icon-button" title="Show or hide tools" aria-label="Show or hide tools">◧</button>
+    </div>
+  </header>
+
+  <aside class="sidebar" id="sidebar" aria-label="Simulation controls">
+    <div class="side-head"><span class="eyebrow">EXPERIMENTAL TERRAIN ENGINE</span><h1>Shape the land.<br><em>Follow the water.</em></h1><p>Explore real terrain, reshape valleys, and watch a hypothetical flood travel.</p></div>
+    <div class="divider"></div>
+    <section class="section">
+      <div class="section-heading"><span class="section-index">01</span><h2>STUDY AREA</h2></div>
+      <div class="two-inputs">
+        <label>LATITUDE<input id="latitude" type="number" min="-80" max="80" step="0.0001" value="36.9369"></label>
+        <label>LONGITUDE<input id="longitude" type="number" min="-180" max="180" step="0.0001" value="-111.4838"></label>
+      </div>
+      <div class="two-inputs tight">
+        <label>EXTENT<select id="extent"><option value="2000">2 km</option><option value="4000" selected>4 km</option><option value="8000">8 km</option><option value="12000">12 km</option></select></label>
+        <label>GRID<select id="resolution"><option value="96">96 × 96</option><option value="160" selected>160 × 160</option><option value="192">192 × 192</option><option value="256">256 × 256</option></select></label>
+      </div>
+      <button id="load-terrain" class="primary-button"><span>Load terrain</span><span>↗</span></button>
+      <div class="subtle-row"><span id="dem-detail">Terrain data not loaded</span><span id="elev-detail">—</span></div>
+      <div class="location-row"><button data-site="canyon" class="text-link">Glen Canyon</button><button data-site="tuttle" class="text-link">Tuttle Creek</button><button data-site="salina" class="text-link">Salina</button></div>
+    </section>
+    <div class="divider"></div>
+    <section class="section">
+      <div class="section-heading"><span class="section-index">02</span><h2>SCULPT & INSPECT</h2></div>
+      <div class="tool-grid" role="group" aria-label="Map tool">
+        <button class="tool active" data-tool="inspect"><span class="tool-icon">⌖</span><span>Inspect</span></button>
+        <button class="tool" data-tool="source"><span class="tool-icon">◉</span><span>Source</span></button>
+        <button class="tool" data-tool="dig"><span class="tool-icon">−</span><span>Excavate</span></button>
+        <button class="tool" data-tool="raise"><span class="tool-icon">+</span><span>Raise</span></button>
+      </div>
+      <div class="slider-row"><label for="brush-radius">BRUSH RADIUS</label><output id="brush-radius-value">100 m</output></div>
+      <input id="brush-radius" class="range" type="range" min="25" max="400" value="100" step="25">
+      <div class="slider-row"><label for="brush-strength">ELEVATION CHANGE</label><output id="brush-strength-value">5 m</output></div>
+      <input id="brush-strength" class="range" type="range" min="1" max="25" value="5" step="1">
+      <p class="helper">Choose Excavate or Raise, then drag over the ground. Terrain and simulation both update.</p>
+    </section>
+    <div class="divider"></div>
+    <section class="section">
+      <div class="section-heading"><span class="section-index">03</span><h2>WATER RELEASE</h2></div>
+      <div class="subtle-row source-location"><span>Release position</span><strong id="source-position">Not placed</strong></div>
+      <label class="field-label" for="discharge">DISCHARGE RATE <span>m³/s</span></label>
+      <input id="discharge" class="large-input" type="number" min="1" max="50000" step="100" value="1500">
+      <div class="slider-row"><label for="duration">RELEASE DURATION</label><output id="duration-value">30 min</output></div>
+      <input id="duration" class="range" type="range" min="1" max="180" step="1" value="30">
+      <p class="helper">Prescribed point discharge. This is <strong>not</strong> a computed dam-breach hydrograph.</p>
+      <div class="run-row"><button id="run" class="run-button"><span id="run-icon">▶</span><span id="run-label">Run simulation</span></button><button id="reset" class="secondary-button" title="Reset simulation" aria-label="Reset simulation">↺</button></div>
+    </section>
+    <div class="sidebar-foot"><button id="export" class="text-link">↓ Download scenario JSON</button><span>v0.1.0</span></div>
+  </aside>
+
+  <div class="layer-switch" role="group" aria-label="Map appearance">
+    <button id="satellite" class="selected">SATELLITE</button><button id="streets">MAP</button>
+    <span class="switch-divider"></span>
+    <button id="terrain-toggle" class="selected">3D TERRAIN</button>
+  </div>
+  <div class="sculpt-cursor" id="sculpt-cursor" aria-hidden="true"></div>
+
+  <section class="inspector" id="inspector" aria-label="Terrain and flood analysis">
+    <div class="inspector-top"><span class="eyebrow">LIVE ANALYSIS</span><span class="badge">MODEL OUTPUT</span></div>
+    <div class="big-number"><span id="depth-number">0.00</span><span class="number-unit">m</span></div>
+    <div class="muted">Water depth at inspected point</div>
+    <div class="stats">
+      <div><span>GROUND ELEV.</span><strong id="ground-number">—</strong></div>
+      <div><span>PEAK DEPTH</span><strong id="peak-number">—</strong></div>
+      <div><span>MAX WATER LEVEL</span><strong id="water-level-number">—</strong></div>
+      <div><span>FIRST WET</span><strong id="arrival-number">—</strong></div>
+    </div>
+    <div class="inspector-hint" id="inspect-hint">Choose Inspect, then click on the map.</div>
+  </section>
+
+  <footer class="timeline">
+    <div class="timeline-top">
+      <div><span class="eyebrow">SIMULATION TIME</span><strong class="clock" id="clock">00:00:00</strong></div>
+      <div class="timeline-stat"><span>AREA INUNDATED</span><strong id="area-number">0.00 km²</strong></div>
+      <div class="timeline-stat"><span>MODELED PEAK DEPTH</span><strong id="global-peak">0.00 m</strong></div>
+      <div class="depth-toggle"><button id="live-depth" class="selected">Live depth</button><button id="max-depth">Peak depth</button></div>
+    </div>
+    <div class="timeline-track"><div class="timeline-fill" id="timeline-fill"></div></div>
+    <div class="legend"><span>DEPTH</span><div class="gradient"></div><span>0.1 m</span><span>0.5 m</span><span>2 m</span><span>5 m+</span><span class="legend-note">3D shading shows model estimates, not observed flood marks.</span></div>
+  </footer>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <div id="loading" class="loading hidden" aria-live="polite"><div class="loader"></div><strong>Preparing elevation model</strong><span>Loading public terrain data…</span></div>
+  <div class="safety">EXPERIMENTAL MODEL <span>·</span> NOT FOR FLOOD WARNING OR EMERGENCY USE</div>
+</body>
+</html>
