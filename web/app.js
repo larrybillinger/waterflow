@@ -22,6 +22,7 @@
   let stations = [], sampleEnd = -1, globeView = false;
   let terrain3d = true, running = false, loading = false, isPainting = false;
   let strokeCells = new Set(), changedCells = new Map(), revision = 0;
+  let suppressSculptClickUntil = 0, lastTerrainErrorTime = 0;
   let elapsed = 0, renderTimer = 0, lastFrame = null, toastTimer = null;
   const overlay = document.createElement('canvas');
   const context = overlay.getContext('2d', {willReadFrequently: true});
@@ -342,6 +343,7 @@
   async function finishStroke() {
     if (!isPainting) return;
     isPainting = false;
+    suppressSculptClickUntil = performance.now() + 300;
     map.dragPan.enable();
     if (!changedCells.size) return;
     const changes = [...changedCells].map(([index,delta])=>({index,delta}));
@@ -464,15 +466,23 @@
     map.addControl(new maplibregl.NavigationControl({visualizePitch:true}),'top-right');
     map.on('style.load',()=>{if(scenario)setupScenarioLayers();});
     map.once('load',loadArea);
-    map.on('error',event=>{if(event.error)console.warn('Waterflow map:',event.error.message);});
+    map.on('error',event=>{
+      if(!event.error)return;
+      const message=event.error.message||String(event.error);
+      console.warn('Waterflow map:',message);
+      if(message.includes('/api/scenarios/') && performance.now()-lastTerrainErrorTime>10000){
+        lastTerrainErrorTime=performance.now();
+        notify('Real elevation tiles failed to render. The 3D terrain view may be incomplete.',true);
+      }
+    });
     map.on('click',event=>{
       if(loading || isPainting || !scenario)return;
       const index=toCell(event.lngLat);
       if(selectedTool==='source')setSource(index);
       else if(selectedTool==='inspect')inspect(index);
       else if(selectedTool==='transect')createTransect(index);
-      else if(selectedTool==='dig' || selectedTool==='raise'){
-        // Allows a single click or touch tap to sculpt.
+      else if((selectedTool==='dig' || selectedTool==='raise') && performance.now() >= suppressSculptClickUntil){
+        // Touch tap has no desktop mousedown; desktop strokes already applied.
         changedCells.clear();strokeCells.clear();paint(event.lngLat);
         isPainting=true;finishStroke();
       }
