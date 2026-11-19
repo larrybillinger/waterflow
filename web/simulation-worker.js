@@ -1,5 +1,6 @@
 /* Experimental local-inertial 2D storage-cell model. No hydrograph calibration. */
 'use strict';
+importScripts('flow-tracker.js');
 const G = 9.81;
 const MANNING = 0.045;
 let width = 0, height = 0, n = 0, dx = 1;
@@ -7,6 +8,7 @@ let z, depth, peak, arrival, east, south, eastNext, southNext, limit;
 let time = 0, totalAdded = 0, exported = 0, peakGlobal = 0;
 let source = -1, discharge = 1500, duration = 1800;
 let running = false, timer = null;
+let tracer = null, pendingTrackPoints = [], previousTrackSampleTime = -1;
 function initialize(message) {
   running = false;
   clearTimeout(timer);
@@ -19,12 +21,32 @@ function initialize(message) {
   limit = new Float64Array(n);
   time = 0; totalAdded = 0; exported = 0; peakGlobal = 0;
   source = -1;
+  tracer = null; pendingTrackPoints = []; previousTrackSampleTime = -1;
   publish();
 }
 function setSource(message) {
   source = message.index;
   discharge = message.discharge;
   duration = message.duration;
+}
+function trackerSample() {
+  if (!tracer) return null;
+  return {x:tracer.x,y:tracer.y,time,heading:tracer.heading,
+    speed:tracer.speed,depth:tracer.depth,distance:tracer.distance,status:tracer.status};
+}
+function placeTracker(message) {
+  if (!depth) return;
+  const i = FlowTracer.indexAt(message.x,message.y,width,height);
+  if (i < 0 || depth[i] < FlowTracer.WET_THRESHOLD) {
+    self.postMessage({type:'trackRejected',
+      reason:'Place the raft in currently wet simulated water (at least 0.1 m deep).'});
+    return;
+  }
+  tracer={x:message.x,y:message.y,heading:0,speed:0,
+    depth:depth[i],distance:0,status:'floating'};
+  pendingTrackPoints=[trackerSample()];
+  previousTrackSampleTime=time;
+  publish();
 }
 function step() {
   let maxH = 0;
@@ -119,6 +141,16 @@ function step() {
     }
     if (arrival[i] < 0 && depth[i] >= 0.1) arrival[i] = time;
   }
+  if (tracer) {
+    const previousStatus=tracer.status, previousDistance=tracer.distance;
+    FlowTracer.advect(tracer,dt,depth,east,south,width,height,dx);
+    if(time - previousTrackSampleTime >= 3 ||
+       tracer.distance - previousDistance >= dx*0.3 ||
+       tracer.status !== previousStatus) {
+      pendingTrackPoints.push(trackerSample());
+      previousTrackSampleTime=time;
+    }
+  }
 }
 function publish() {
   let wet = 0, stored = 0;
@@ -129,7 +161,8 @@ function publish() {
   const h = depth.slice(), p = peak.slice(), a = arrival.slice();
   self.postMessage({
     type: 'frame', time, wetArea: wet * dx * dx, maxDepth: peakGlobal,
-    added: totalAdded, exported, stored, depth: h.buffer, peak: p.buffer, arrival: a.buffer
+    added: totalAdded, exported, stored, depth: h.buffer, peak: p.buffer, arrival: a.buffer,
+    tracker:trackerSample(),trackPoints:pendingTrackPoints.splice(0)
   }, [h.buffer, p.buffer, a.buffer]);
 }
 function tick() {
@@ -151,4 +184,6 @@ self.onmessage = event => {
   else if (m.type === 'config') setSource(m);
   else if (m.type === 'start' && depth && !running) { running = true; tick(); }
   else if (m.type === 'pause') { running = false; clearTimeout(timer); }
+  else if (m.type === 'track') placeTracker(m);
+  else if (m.type === 'clearTrack') { tracer=null;pendingTrackPoints=[];publish(); }
 };
