@@ -13,6 +13,8 @@ A full-screen, 3D, map-based terrain and flood experimentation lab. Fly across r
 - Place a hypothetical release point; set constant discharge (m³/s) and release duration.
 - Worker-thread, mass-limited 2D local-inertial shallow-water approximation; visualize current or maximum depth.
 - Click to inspect ground elevation, current depth, maximum depth, modeled maximum water-surface elevation, and first wetting time.
+- Draw a **straight-line sample transect** from the release point with stations every 100–1,000 m and download peak-depth/first-wetting measurements as CSV.
+- Optional whole-earth globe navigation in addition to local 3D terrain.
 - Download a scenario JSON snapshot. Simulations reset after terrain/source changes.
 
 ## Run locally
@@ -39,7 +41,8 @@ Open http://localhost:8086. Change host port in compose before deploying alongsi
 2. Choose **Source** and click where water should enter the modeled domain.
 3. Adjust discharge and release time; select **Run** to begin.
 4. Select **Inspect** to measure modeled depths on the map. Switch between live depth and maximum depth.
-5. Pause, reset, excavate, or raise ground to compare scenarios. Drag terrain brush on the map and release the pointer to apply the 3D terrain update.
+5. Choose **Sample line**, click a downstream endpoint, and download station readings as CSV. The line does not automatically trace a river.
+6. Pause, reset, excavate, or raise ground to compare scenarios. Drag terrain brush on the map and release the pointer to apply the 3D terrain update.
 
 The modeled rectangle is deliberately limited in size to keep real-time experimentation responsive. Zooming outside it still shows real-world terrain, but only the outlined area is simulated.
 
