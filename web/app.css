@@ -14,3 +14,69 @@
 @media(max-width:410px){.inspector{bottom:185px;right:7px;width:149px}.inspector .stats{grid-template-columns:1fr 1fr}.stats div>span{font-size:8px}.stats strong{font-size:11px}.side-head h1{font-size:26px}}
 
 .stations{max-height:165px;overflow:auto;margin-top:16px;padding-top:10px;border-top:1px solid var(--outline);font-size:10px;scrollbar-width:thin}.stations-empty{color:#728e9b}.station-head{font-size:8px;letter-spacing:.03em;color:#7f9ca9;margin-bottom:7px}.station-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;color:#c7e3e9;margin:7px 0}.station-row span:not(:first-child){text-align:right}.station-row span:first-child{color:var(--accent)}.station-export{margin-top:16px}.inspector:has(.station-row){max-height:min(63vh,600px);overflow-y:auto}
+
+
+/* Cinema is deliberately built on top of the same full-viewport WebGL scene. */
+.cinema-launch{width:100%;display:flex;gap:13px;align-items:center;text-align:left;border:1px solid #50727b;background:linear-gradient(120deg,#1e3a46,#112733);padding:15px 13px;color:#e9f9fc;transition:background .2s,transform .2s}
+.cinema-launch:hover{background:linear-gradient(120deg,#295766,#173747);transform:translateY(-1px)}
+.cinema-glyph{display:grid;place-items:center;width:34px;height:34px;flex:none;border:1px solid #8de3e4;border-radius:50%;font-size:12px;color:#8de3e4}
+.cinema-launch strong{display:block;font:600 13px 'Space Grotesk',sans-serif}
+.cinema-launch small{display:block;margin-top:4px;font-size:10px;color:#8eacb8}
+.cinema-arrow{margin-left:auto;color:#8de3e4;font-size:19px}
+.movie-hud[hidden]{display:none}
+.movie-hud{position:fixed;z-index:14;bottom:22px;left:50%;transform:translateX(-50%);width:min(665px,calc(100vw - 32px));background:rgba(5,18,28,.90);border:1px solid rgba(153,216,229,.25);box-shadow:0 24px 100px #000a;backdrop-filter:blur(28px);padding:19px 24px 15px}
+.movie-mode .sidebar,.movie-mode .inspector,.movie-mode .timeline{opacity:0;pointer-events:none;visibility:hidden}
+.movie-mode .layer-switch{opacity:.55}
+.movie-mode .topbar{background:linear-gradient(90deg,rgba(5,18,28,.65),rgba(5,18,28,.13));border-bottom-color:transparent}
+.movie-mode .topbar .topright{opacity:.65}
+.movie-heading{display:flex;align-items:center;gap:20px}
+.movie-heading>div:first-child{flex:1}
+.movie-heading strong{display:block;font:600 24px/1.3 'Space Grotesk',sans-serif;letter-spacing:-.04em;margin-top:3px}
+.movie-state{font:700 9px 'DM Sans',sans-serif;letter-spacing:.12em;color:#a9e9d5;background:rgba(87,171,147,.14);padding:8px 10px}
+.movie-close{background:transparent;border:0;color:#b7cbd6;font-size:19px;padding:3px 4px}
+.movie-measures{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:17px 0 16px;padding:16px 0;border-block:1px solid var(--outline)}
+.movie-measures div>span{font-size:9px;letter-spacing:.11em;color:#81a0ac;display:block;margin-bottom:7px;font-weight:700}
+.movie-measures strong{font:600 18px 'Space Grotesk',sans-serif;color:#eefaff;white-space:nowrap}
+.movie-control-row{display:flex;gap:7px;margin-bottom:8px}
+.movie-primary{border:0;background:var(--accent);color:#06242d;font:700 11px 'DM Sans',sans-serif;letter-spacing:.07em;padding:0 15px;min-height:37px;white-space:nowrap}
+.movie-segment{display:flex;gap:3px;background:#112936;padding:3px;flex:1}
+.movie-segment button,.movie-control{background:#17323f;border:1px solid transparent;color:#bcd2db;font:700 10px 'DM Sans',sans-serif;letter-spacing:.07em;padding:9px 12px;white-space:nowrap}
+.movie-segment button{flex:1}
+.movie-segment button.selected,.movie-control.selected{background:rgba(85,201,211,.22);border-color:#408693;color:#d7ffff}
+.movie-control{flex:1}
+.movie-primary:hover,.movie-control:hover,.movie-segment button:hover{filter:brightness(1.2)}
+.movie-playback{padding-top:10px}
+.movie-playback-heading{display:flex;justify-content:space-between;gap:10px;font:700 9px 'DM Sans',sans-serif;letter-spacing:.09em;color:#8eaebc}
+#movie-scrub{width:100%;height:15px;margin:8px 0 10px;accent-color:#80dce1;cursor:pointer}
+.movie-playback-actions{display:flex;gap:7px;align-items:center}
+.movie-playback-actions label{display:flex;align-items:center;gap:7px;color:#8eaebc;font-size:9px;font-weight:700;letter-spacing:.06em}
+.movie-playback-actions select{color:#e2f5fc;background:#14323d;border:1px solid #335460;padding:7px 6px}
+.movie-playback-actions button{flex:unset}
+.movie-playback-actions button:first-child{flex:1}
+.movie-caveat{color:#90a9b6;font-size:10px;line-height:1.45;margin:12px 0 0}
+.film-marker{position:relative;width:90px;height:120px;filter:drop-shadow(0 5px 6px rgba(0,0,0,.65));pointer-events:none}
+.film-marker img{width:90px;height:120px;display:block;animation:raft-bob 2.2s ease-in-out infinite;transform-origin:50% 45%}
+@keyframes raft-bob{0%,100%{transform:scale(.98) rotate(-1deg)}50%{transform:scale(1.03) rotate(1deg)}}
+.film-marker .water-tag{display:none;width:25px;height:25px;position:absolute;left:31px;top:47px;border:4px solid #c2ffff;border-radius:50%;box-shadow:0 0 0 8px rgba(103,219,240,.24),0 0 24px #3ec7ec,0 5px 18px #0008;background:#123846}
+.film-marker.tracer-mode img{display:none}
+.film-marker.tracer-mode .water-tag{display:block}
+.film-marker.grounded img{opacity:.55;filter:grayscale(.5)}
+.film-marker.grounded .water-tag{border-color:#eac18e;box-shadow:0 0 0 7px #b8883d45}
+@media(max-width:720px){
+  .movie-hud{bottom:23px;padding:14px 14px 12px}
+  .movie-heading strong{font-size:19px}
+  .movie-state{font-size:8px;padding:5px}
+  .movie-measures{margin:11px 0 11px;padding:10px 0;gap:5px}
+  .movie-measures div>span{font-size:8px;letter-spacing:0}
+  .movie-measures strong{font-size:12px}
+  .movie-control-row{flex-wrap:wrap}
+  .movie-primary{flex:1}
+  .movie-segment{flex:2}
+  .movie-control{flex:1}
+  .movie-control,.movie-segment button{padding:9px 7px;font-size:9px}
+  .movie-playback-actions{flex-wrap:wrap}
+  .movie-playback-actions label{order:2;flex:1}
+  .movie-playback-actions button:first-child{flex:2}
+  .movie-caveat{font-size:9px}
+}
+@media(prefers-reduced-motion:reduce){.film-marker img{animation:none}.cinema-launch{transition:none}}
