@@ -1,0 +1,3 @@
+# Sprint 002 blueprint
+
+Worker sends trackPlaced, trackRejected and frame tracker updates. Passive advection module samples signed face flux, reconstructs cell-average velocity and advances a fractional-cell position by bounded substeps with a wet/dry threshold. Movie controller displays marker via MapLibre Marker and geojson line, follows it with eased camera, records bounded route sample history, interpolates playback and exports a CSV. Cinematic rate message to worker throttles numerical time to about 8 simulated seconds per real second. Hide control panels during movie mode without changing full-screen map. Reset route after a source/terrain/scenario change. Keep map attributions and warnings visible.
