@@ -88,10 +88,10 @@
     place(index) {
       const scenario=this.getScenario();
       if(!scenario || index<0){this.notify('Choose a location inside the study area.',true);return;}
-      this.clear(false);
       const x=index%scenario.width+0.5,y=Math.floor(index/scenario.width)+0.5;
       this.worker.postMessage({type:'track',x,y});
     }
+    placed() {this.clear(false);this.selectTool('inspect');this.notify('Tracker placed in modeled water. Follow mode is active.');}
     rejected(frame) {
       this.notify(frame.reason || 'The tracker must start in simulated water at least 0.1 m deep.',true);
     }
