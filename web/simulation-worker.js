@@ -8,6 +8,7 @@ let z, depth, peak, arrival, east, south, eastNext, southNext, limit;
 let time = 0, totalAdded = 0, exported = 0, peakGlobal = 0;
 let source = -1, discharge = 1500, duration = 1800;
 let running = false, timer = null;
+let cinemaEnabled = false, cinemaSpeed = 8, lastTickWall = 0;
 let tracer = null, pendingTrackPoints = [], previousTrackSampleTime = -1;
 function initialize(message) {
   running = false;
@@ -21,6 +22,7 @@ function initialize(message) {
   limit = new Float64Array(n);
   time = 0; totalAdded = 0; exported = 0; peakGlobal = 0;
   source = -1;
+  lastTickWall=performance.now();
   tracer = null; pendingTrackPoints = []; previousTrackSampleTime = -1;
   publish();
 }
@@ -49,10 +51,10 @@ function placeTracker(message) {
   self.postMessage({type:'trackPlaced'});
   publish();
 }
-function step() {
+function step(dtLimit=Infinity) {
   let maxH = 0;
   for (let i = 0; i < n; i++) if (depth[i] > maxH) maxH = depth[i];
-  const dt = Math.min(2, 0.35 * dx / Math.sqrt(G * Math.max(maxH, 0.05)));
+  const dt = Math.min(dtLimit, 2, 0.35 * dx / Math.sqrt(G * Math.max(maxH, 0.05)));
   const area = dx * dx;
   // A square, distributed 3x3 inlet avoids a pathological single-cell jet.
   if (source >= 0 && source < n && time < duration) {
@@ -169,9 +171,22 @@ function publish() {
 function tick() {
   if (!running) return;
   const started = performance.now();
-  for (let k = 0; k < 9; k++) {
-    step();
-    if (time >= 21600 || performance.now() - started > 60) break;
+  if (cinemaEnabled) {
+    // Advance by a fixed multiple of wall time. Smaller hydraulic steps make
+    // the following camera usable without altering the underlying equations.
+    let remaining = Math.min(0.12, Math.max(0, (started - lastTickWall) / 1000)) * cinemaSpeed;
+    lastTickWall = started;
+    for (let k=0; remaining > 0.0001 && k<35; k++) {
+      const previous=time;
+      step(remaining);
+      remaining -= time - previous;
+      if (time >= 21600 || performance.now()-started > 45) break;
+    }
+  } else {
+    for (let k = 0; k < 9; k++) {
+      step();
+      if (time >= 21600 || performance.now() - started > 60) break;
+    }
   }
   publish();
   if (time >= 21600) {
@@ -183,8 +198,11 @@ self.onmessage = event => {
   const m = event.data;
   if (m.type === 'init') initialize(m);
   else if (m.type === 'config') setSource(m);
-  else if (m.type === 'start' && depth && !running) { running = true; tick(); }
+  else if (m.type === 'start' && depth && !running) { running = true;lastTickWall=performance.now()-60;tick(); }
   else if (m.type === 'pause') { running = false; clearTimeout(timer); }
   else if (m.type === 'track') placeTracker(m);
   else if (m.type === 'clearTrack') { tracer=null;pendingTrackPoints=[];publish(); }
+  else if (m.type === 'cinemaRate') { cinemaEnabled = m.enabled === true;
+    cinemaSpeed = Number.isFinite(m.rate) ? Math.min(30, Math.max(1, m.rate)) : 8;
+    lastTickWall = performance.now(); }
 };
