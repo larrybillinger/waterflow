@@ -11,7 +11,9 @@ const sandbox = {
   clearTimeout: () => {},
   setTimeout: () => 1,
   performance: {now: () => 0},
-  Math, Float32Array, Float64Array, Number
+  Math, Float32Array, Float64Array, Number,
+  importScripts: () => {},
+  FlowTracer: require('../web/flow-tracker.js')
 };
 const code = fs.readFileSync(path.join(__dirname, '../web/simulation-worker.js'), 'utf8');
 vm.runInNewContext(code, sandbox, {filename: 'simulation-worker.js'});
@@ -53,3 +55,27 @@ send({type: 'init', width, height, cellSize: dx, elevation: ground.buffer});
 assert.equal(last().stored, 0, 'reset clears stored water');
 assert.equal(last().time, 0, 'reset clears time');
 console.log('Hydraulic worker positivity and mass-balance tests passed');
+
+
+// Tracker must be placed in wet water; worker should acknowledge and record it.
+send({type:'init', width, height, cellSize:dx, elevation:ground.buffer});
+send({type:'track',x:0.5,y:0.5});
+assert.equal(last().type,'trackRejected','reject tag on dry ground');
+send({type:'config',index:center,discharge:1500,duration:120});
+send({type:'start'});
+send({type:'pause'});
+frames.length=0;
+send({type:'track',x:15.5,y:20.5});
+assert(frames.some(entry=>entry.type==='trackPlaced'),'accept tag in wet source');
+const placed=frames.find(entry=>entry.type==='frame' && entry.tracker);
+assert(placed && placed.tracker.status==='floating','new tracker is floating');
+assert.equal(placed.trackPoints.length,1,'initial point is captured');
+assert.equal(placed.trackPoints[0].distance,0);
+send({type:'start'});
+assert(last().tracker && Number.isFinite(last().tracker.x),'tracker position remains finite');
+assert(last().trackPoints.every(point=>Number.isFinite(point.time)),'tracer path times are finite');
+send({type:'pause'});
+send({type:'clearTrack'});
+assert.equal(last().tracker,null,'clearing track removes tracker from frames');
+send({type:'init',width,height,cellSize:dx,elevation:ground.buffer});
+assert.equal(last().tracker,null,'scenario reset clears tracker');
