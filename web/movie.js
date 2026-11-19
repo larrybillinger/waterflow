@@ -53,13 +53,15 @@
     }
     enter() {
       if(!this.getScenario()){this.notify('Load a study area before entering movie mode.',true);return;}
-      this.active=true;document.body.classList.add('movie-mode');
+      this.active=true;this.worker.postMessage({type:'cinemaRate',enabled:true,rate:8});
+      document.body.classList.add('movie-mode');
       $('movie-hud').hidden=false;
       this.setFollow(true);
       if(!this.current){this.selectTool('tag');this.notify('Run water across the terrain, then click a wet point to start filming.');}
     }
     exit() {
       this.stopReplay(true);this.active=false;
+      this.worker.postMessage({type:'cinemaRate',enabled:false});
       document.body.classList.remove('movie-mode');$('movie-hud').hidden=true;
       this.selectTool('inspect');this.map.resize();
     }
