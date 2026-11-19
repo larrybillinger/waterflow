@@ -106,8 +106,10 @@ function step() {
     depth[i] -= outDepth;
     exported += outDepth * area;
   }
+  // Reuse face buffers; avoid allocating megabytes every simulation tick.
+  const previousEast = east, previousSouth = south;
   east = eastNext; south = southNext;
-  eastNext = new Float64Array(n); southNext = new Float64Array(n);
+  eastNext = previousEast; southNext = previousSouth;
   time += dt;
   for (let i = 0; i < n; i++) {
     if (depth[i] < 0) depth[i] = 0; // Guard against roundoff only; limiter avoids overdraw.
