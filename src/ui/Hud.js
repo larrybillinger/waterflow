@@ -69,6 +69,10 @@ export class Hud {
     this.#buildLegend();
     this.#buildDisclaimer();
 
+    // Vignette: subtle dark gradient at viewport edges, adopted from ChatGPT's design.
+    const vignette = el('div', { id: 'vignette' });
+    document.body.append(vignette);
+
     document.body.append(this.root);
 
     this.#buildCinema();
@@ -797,6 +801,33 @@ export class Hud {
         'findable from altitude; turn this off for a true-scale view up close.',
     });
 
+    // --- Record & Replay controls ---
+    this.movieRecordButton = button('Record', {
+      onClick: () => this.emit('movie-record'),
+    });
+    this.movieReplayButton = button('Replay', {
+      onClick: () => this.emit('movie-replay'),
+    });
+    this.moviePauseButton = button('Pause', {
+      onClick: () => this.emit('movie-pause'),
+    });
+    this.movieScrubber = el('input', {
+      type: 'range',
+      min: '0',
+      max: '1',
+      step: '0.001',
+      value: '0',
+      className: 'movie-scrubber',
+    });
+    this.movieScrubber.addEventListener('input', () => {
+      this.emit('movie-seek', { time: parseFloat(this.movieScrubber.value) });
+    });
+    this.movieTimeLabel = el('div', { className: 'hint', textContent: 'No recording.' });
+    this.movieScrubWrap = el('div', {
+      className: 'movie-scrub-wrap',
+      style: 'display:none',
+    }, [this.movieScrubber, this.movieTimeLabel]);
+
     return el('div', { className: 'tab-page' }, [
       group('Follow the water', [
         el('div', {
@@ -817,6 +848,20 @@ export class Hud {
         this.controls.raftScale,
         this.raftScaleHint,
       ]),
+      group('Record & Replay', [
+        el('div', {
+          className: 'hint',
+          textContent:
+            'Record a cinematic run, then scrub through it like a movie. ' +
+            'Start recording, run the sim in cinematic mode, then stop and hit replay.',
+        }),
+        el('div', { className: 'btn-grid' }, [
+          this.movieRecordButton,
+          this.movieReplayButton,
+          this.moviePauseButton,
+        ]),
+        this.movieScrubWrap,
+      ]),
     ]);
   }
 
@@ -829,6 +874,35 @@ export class Hud {
     }
     this.cameraHint.textContent =
       mode === 'free' ? 'Normal map navigation.' : (DIRECTOR_MODES[mode]?.describe ?? '');
+  }
+
+  /** Update movie recording/replay button states. */
+  setMovieState(state) {
+    const rec = this.movieRecordButton;
+    const play = this.movieReplayButton;
+    const pause = this.moviePauseButton;
+    if (!rec) return;
+
+    rec.textContent  = state === 'recording' ? '⏹ Stop' : '⏺ Record';
+    rec.classList.toggle('active', state === 'recording');
+    play.textContent = state === 'replaying' ? '⏹ Stop' : '▶ Replay';
+    play.classList.toggle('active', state === 'replaying');
+    pause.disabled   = state !== 'replaying';
+
+    this.movieScrubWrap.style.display = (state === 'replaying' || state === 'stopped') ? '' : 'none';
+  }
+
+  /** Update movie scrub slider and time label during replay. */
+  setMovieProgress(time, duration) {
+    if (!this.movieScrubber || !duration) return;
+    this.movieScrubber.max   = String(duration);
+    this.movieScrubber.value = String(time);
+    const fmt = (s) => {
+      const m = Math.floor(s / 60);
+      const sec = (s % 60).toFixed(1);
+      return m > 0 ? `${m}m ${sec}s` : `${sec}s`;
+    };
+    this.movieTimeLabel.textContent = `${fmt(time)} / ${fmt(duration)}`;
   }
 
   /**
@@ -889,6 +963,7 @@ export class Hud {
         { value: 'maxDepth', label: 'Maximum depth reached' },
         { value: 'arrival', label: 'Flood arrival time' },
         { value: 'velocity', label: 'Peak velocity' },
+        { value: 'liveDepth', label: 'Current depth (live)' },
       ],
       onChange: (mode) => this.emit('overlay-change', { mode }),
       hint: 'Drawn on the ground, so it shows where water went even after it drained.',
@@ -920,6 +995,8 @@ export class Hud {
     });
 
     this.exportButton = button('Export CSV', { onClick: () => this.emit('export-csv') });
+    this.saveScenarioButton = button('Save scenario', { onClick: () => this.emit('export-scenario') });
+    this.loadScenarioButton = button('Load scenario', { onClick: () => this.emit('import-scenario') });
 
     this.summaryReadout = readout([
       ['Simulated', '—'],
@@ -968,6 +1045,7 @@ export class Hud {
         this.tableNotice,
         this.exportButton,
       ]),
+      group('Scenario', [this.saveScenarioButton, this.loadScenarioButton]),
     ]);
   }
 

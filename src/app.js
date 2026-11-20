@@ -48,6 +48,13 @@ import Drifter, { createSolverSampler, advanceDrifter, DRIFTER_STATE } from './s
 import Viewer from './render/Viewer.js';
 import TerrainEditor, { STROKE_BRUSHES } from './edit/TerrainEditor.js';
 import Hud from './ui/Hud.js';
+import {
+  exportScenario,
+  downloadScenario,
+  loadScenarioFile,
+  applyTerrainEdits,
+} from './data/scenario.js';
+import MovieRecorder from './render/MovieRecorder.js';
 
 /** Legend definitions for each overlay mode. */
 const LEGENDS = {
@@ -62,6 +69,11 @@ const LEGENDS = {
   },
   velocity: {
     title: 'Peak velocity',
+    gradient:
+      'linear-gradient(90deg, #fff0 0%, #fff09b 8%, #66ccbb 40%, #2575b8 70%, #3e2a7a 100%)',
+  },
+  liveDepth: {
+    title: 'Current depth (live)',
     gradient:
       'linear-gradient(90deg, #fff0 0%, #fff09b 8%, #66ccbb 40%, #2575b8 70%, #3e2a7a 100%)',
   },
@@ -147,6 +159,7 @@ export class WaterflowApp {
     this.cameraMode = 'free';
     this.cinematic = false;
     this.watchPoint = null;
+    this.movieRecorder = new MovieRecorder();
 
     // --- Timing ---
     this.fpsSamples = [];
@@ -895,7 +908,7 @@ export class WaterflowApp {
     }
 
     let labels;
-    if (this.overlayMode === 'maxDepth') {
+    if (this.overlayMode === 'maxDepth' || this.overlayMode === 'liveDepth') {
       const max = this.overlayScales.maxDepth;
       labels = ['0 m', `${(max / 2).toFixed(1)} m`, `${max.toFixed(1)} m`];
     } else if (this.overlayMode === 'velocity') {
@@ -1522,9 +1535,141 @@ export class WaterflowApp {
         }
         break;
 
+      case 'export-scenario':
+        this.#exportScenario();
+        break;
+
+      case 'import-scenario':
+        this.#importScenario();
+        break;
+
+      case 'movie-record': {
+        if (this.movieRecorder.recording) {
+          this.movieRecorder.stopRecording();
+          this.hud.setMovieState('stopped');
+          this.hud.toast(
+            `Recorded ${this.movieRecorder.keyframes.length} keyframes ` +
+              `(${this.movieRecorder.duration.toFixed(0)}s). Hit replay to watch.`,
+          );
+        } else {
+          this.movieRecorder.startRecording();
+          this.hud.setMovieState('recording');
+          this.hud.toast('Recording started — run the simulation in cinematic mode.');
+        }
+        break;
+      }
+
+      case 'movie-replay': {
+        if (!this.movieRecorder.hasRecording) {
+          this.hud.toast('No recording yet. Record a cinematic run first.');
+          break;
+        }
+        if (this.movieRecorder.replaying) {
+          this.movieRecorder.stopReplay();
+          this.hud.setMovieState('stopped');
+        } else {
+          this.movieRecorder.startReplay();
+          this.hud.setMovieState('replaying');
+        }
+        break;
+      }
+
+      case 'movie-seek':
+        this.movieRecorder.seek(payload.time);
+        break;
+
+      case 'movie-pause':
+        this.movieRecorder.paused = !this.movieRecorder.paused;
+        break;
+
       default:
         break;
     }
+  }
+
+  #exportScenario() {
+    if (!this.domain) {
+      this.hud.toast('Load terrain first.');
+      return;
+    }
+    const scenario = exportScenario({
+      domain: this.domain,
+      dam: this.dam,
+      damEndpoints: this.damEndpoints,
+      breach: this.breach,
+      crestElevation: this.crestElevation,
+      poolElevation: this.poolElevation,
+      editor: this.editor,
+      imagerySource: this.imageryInfo?.sourceId ?? 'usgsImagery',
+      manningN: this.solver?.manningN ?? defaults.manningN,
+      version: this.version,
+    });
+    downloadScenario(scenario);
+    this.hud.toast('Scenario saved.');
+  }
+
+  async #importScenario() {
+    let scenario;
+    try {
+      scenario = await loadScenarioFile();
+    } catch (e) {
+      this.hud.toast(e.message || 'Could not load scenario.');
+      return;
+    }
+
+    const loc = scenario.location;
+    await this.loadDomain({
+      lat: loc.lat,
+      lon: loc.lon,
+      domainMeters: loc.domainMeters ?? defaults.domainMeters,
+      gridSize: loc.gridSize ?? defaults.gridSize,
+      imagerySource: scenario.imagerySource ?? 'usgsImagery',
+    });
+
+    // Apply terrain edits before placing the dam so the dam sits on the edited surface.
+    if (scenario.terrainEdits?.length) {
+      applyTerrainEdits(this.editor.grid, scenario.terrainEdits, this.editor.editedCells);
+      // Sync the editor's grid back to the working terrain grid.
+      this.terrainGrid.data.set(this.editor.grid.data);
+      this.solver?.setBed(this.terrainGrid, this.pristineGrid);
+      this.viewer.terrain?.updateElevation(this.terrainGrid);
+    }
+
+    // Manning's n.
+    if (scenario.manningN != null) {
+      this.solver?.setManning(scenario.manningN);
+      if (this.hud.controls.manning) this.hud.controls.manning.setValue(scenario.manningN);
+    }
+
+    // Restore dam placement.
+    if (scenario.dam) {
+      const { start, end, crestElevation, crestWidth } = scenario.dam;
+      this.hud.controls.crestWidth.input.value = crestWidth ?? 10;
+      this.#createDam(start, end);
+
+      // Override auto-computed crest with the saved value.
+      if (crestElevation != null && crestElevation !== this.crestElevation) {
+        this.#handle('crest-change', { value: crestElevation });
+      }
+    }
+
+    // Restore pool elevation.
+    if (scenario.poolElevation != null && this.dam) {
+      this.#setPoolElevation(scenario.poolElevation, { updateSlider: true });
+    }
+
+    // Restore breach settings.
+    if (scenario.breach) {
+      Object.assign(this.breach, scenario.breach);
+      // Sync UI sliders with the restored breach state.
+      const c = this.hud.controls;
+      if (c.breachWidth) c.breachWidth.setValue(this.breach.widthPercent);
+      if (c.breachTime) c.breachTime.setValue(this.breach.formationMinutes);
+      if (c.breachProgression?.input) c.breachProgression.input.value = this.breach.progression;
+      if (c.breachMode?.input) c.breachMode.input.value = this.breach.mode;
+    }
+
+    this.hud.toast('Scenario loaded.');
   }
 
   #exportCsv() {
@@ -1611,9 +1756,34 @@ export class WaterflowApp {
       const deltaSeconds = Math.min((now - this.lastFrameTime) / 1000, 0.1);
       this.lastFrameTime = now;
 
-      if (this.playing) this.#advanceSimulation();
+      // Movie replay: when replaying, the recorder drives the camera and simulation time.
+      if (this.movieRecorder.replaying) {
+        const sample = this.movieRecorder.advance(deltaSeconds);
+        if (sample) {
+          this.viewer.camera.position.copy(sample.eye);
+          this.viewer.camera.lookAt(sample.look);
+          this.hud.setMovieProgress(
+            this.movieRecorder.playbackTime,
+            this.movieRecorder.duration,
+          );
+        }
+      } else {
+        if (this.playing) this.#advanceSimulation();
+        this.#updateCamera(deltaSeconds);
+      }
 
-      this.#updateCamera(deltaSeconds);
+      // Record keyframes while simulating in cinematic mode.
+      if (
+        this.movieRecorder.recording &&
+        this.playing &&
+        this.viewer.director.active
+      ) {
+        this.movieRecorder.capture(
+          this.simulationTime,
+          this.viewer.director.eye,
+          this.viewer.director.look,
+        );
+      }
 
       const frame = this.viewer.render({
         deltaSeconds,

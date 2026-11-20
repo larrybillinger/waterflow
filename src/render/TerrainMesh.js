@@ -21,6 +21,7 @@ export const OVERLAY_MODES = {
   maxDepth: 1,
   arrival: 2,
   velocity: 3,
+  liveDepth: 4,
 };
 
 export class TerrainMesh {

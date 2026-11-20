@@ -209,10 +209,15 @@ void main() {
       show = state.b >= 0.0;
       value = state.b / max(uOverlayMaxTime, 1.0);
       overlayColour = timeRamp(value);
-    } else {
+    } else if (uOverlayMode < 3.5) {
       value = state.a / max(uOverlayMaxSpeed, 0.1);
       overlayColour = depthRamp(value);
       show = state.g > 0.05;
+    } else {
+      // Live depth: current water depth (state.r) rather than peak (state.g).
+      value = state.r / max(uOverlayMaxDepth, 0.01);
+      overlayColour = depthRamp(value);
+      show = state.r > 0.05;
     }
 
     if (show) {
