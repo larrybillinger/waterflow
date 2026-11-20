@@ -14,3 +14,11 @@ MEDIUM: Coarse flux-derived velocities can misrepresent narrow channels, eddies 
 MEDIUM: Replay flood shading remains at last simulation frame; it is not a time-synchronized flood movie.
 MEDIUM: Frequent camera movement and route line redraw may be slow on mobile GPUs.
 MEDIUM: Route samples in memory are bounded and cleared on resets; no persisted video or scenario restoration.
+
+HIGH: Classic and Studio have different water-forcing and numerical assumptions; similar visualizations can misleadingly appear equivalent. No cross-engine claim of validated accuracy.
+HIGH: 218 unit tests and 41 synthetic-browser checks reported by Claude do not establish accuracy against a measured flood event or real DEM correctness.
+HIGH: Automatically substituting synthetic terrain for a failed real DEM risks invented geography; normal mode must fail and demo mode must label fictional terrain.
+MEDIUM: Studio requires WebGL2 float texture support and its high-resolution GPU rendering may strain low-power devices.
+MEDIUM: The two renderer coordinate systems and grids make a shared live scenario unsafe without a designed conversion.
+MEDIUM: The fixed-host tile proxy needs request controls and upstream provider license checks before public exposure.
+MEDIUM: Duplicated 3D engines raise repository and maintenance costs; revisit after real-world validation.

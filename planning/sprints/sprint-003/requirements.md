@@ -1,0 +1,3 @@
+# Sprint 003 requirements
+
+Compare Claude's independent flood-simulator branch with the Waterflow v0.2 main branch and bring the strongest compatible features into the existing site. Preserve existing Classic behaviors and 3D globe. Include Advanced GPU Studio at /studio/ with reservoir/dam/breach workflow, 3D water shader, undoable terrain and enhanced camera modes. Move geographic context between workspaces, but not hydraulic state. Restrict tile proxy to approved sources. No automatic synthetic terrain if public elevation fails. Update version and documentation, test both stacks. Remain experimental.
