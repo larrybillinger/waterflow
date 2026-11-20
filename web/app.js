@@ -464,10 +464,27 @@
     map.setStyle(style==='satellite'?imageryStyle:streetStyle);
   }
   function initMap() {
+    // Preserve geographic context when returning from the advanced simulator.
+    const launch=$('advanced-launch');
+    if(launch)launch.addEventListener('click',event=>{
+      event.preventDefault();
+      const url=new URL('/studio/',window.location.origin);
+      for(const [query,id] of [['lat','latitude'],['lon','longitude'],['extent','extent']]){
+        const value=Number($(id).value);
+        if(Number.isFinite(value))url.searchParams.set(query,String(value));
+      }
+      window.location.assign(url.pathname+url.search);
+    });
+    const incoming=new URLSearchParams(window.location.search);
+    const lat=Number(incoming.get('lat')),lon=Number(incoming.get('lon'));
+    if(incoming.has('lat') && incoming.has('lon') &&
+      Number.isFinite(lat)&&Number.isFinite(lon)&&Math.abs(lat)<=80&&Math.abs(lon)<=180){
+      $('latitude').value=lat;$('longitude').value=lon;
+    }
     if(!window.maplibregl){fail(new Error('Map renderer unavailable. Check internet access or CDN.'));return;}
     initializeWorker();wire();
     map=new maplibregl.Map({
-      container:'map',style:imageryStyle,center:[-111.4838,36.9369],
+      container:'map',style:imageryStyle,center:[Number($('longitude').value),Number($('latitude').value)],
       zoom:13.4,pitch:67,bearing:-28,antialias:true,maxPitch:85,
       attributionControl:true
     });
