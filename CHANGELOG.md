@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.3.1 — 2026-11-19
+
+- Added a containerized CI smoke test that serves both integrated apps and fetches a real generated Studio JS bundle.
+- Checks API health, navigation links, asset routing and rejection of an unapproved tile proxy host.
+- Added Docker build exclusions for node_modules, credentials, logs and generated outputs.
+- Improved integration validation documentation. No hydraulic equations or frontend simulation behavior changed.
+
 ## v0.3.0 — 2026-11-19
 
 - Added Claude-derived Advanced Dam Studio under /studio/, preserving Classic MapLibre Terrain Lab at /.

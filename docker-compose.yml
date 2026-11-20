@@ -1,7 +1,7 @@
 services:
   waterflow:
     build: .
-    image: waterflow:0.3.0
+    image: waterflow:0.3.1
     ports:
       - "127.0.0.1:8086:8086"
     restart: unless-stopped
