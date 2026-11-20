@@ -27,6 +27,22 @@ Waterflow currently does the following end to end, in the browser, with no API k
    depth, flood width, peak velocity and arrival time at user-set increments along it.
 9. Lets the user carve channels, raise levees, flatten ground and otherwise reshape the
    terrain, then re-run to compare.
+10. Drops a raft on the water that drifts on the simulated velocity field, leaves a trail
+    showing the path it took, and can be followed with chase, onboard, orbit, watch-point
+    and valley-flyover cameras, with a cinematic presentation mode.
+
+## Verification status
+
+- 218 unit tests pass, including a CPU reference implementation of the solver asserting
+  mass conservation under 0.5 percent on a closed basin.
+- 41 of 41 browser checks pass via `npm run verify`, which drives a real Chrome through a
+  complete scenario.
+- Lint clean. Build clean.
+
+Three defects were found by the browser harness before release and fixed. None was caught
+by the unit tests, and all three produced plausible-looking output. They are written up in
+`notes/release-notes/v0.1.0.md`. The conclusion carried into sprint 002 is that the
+browser harness earns its keep and should be extended rather than left alone.
 
 ## What is deliberately not built yet
 
