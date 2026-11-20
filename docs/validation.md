@@ -12,3 +12,7 @@ CI additionally executes Node worker tests that confirm finite/nonnegative depth
 Run node --check for web/app.js, web/simulation-worker.js, web/flow-tracker.js and web/movie.js. Run node tests/flow-tracker-test.cjs and node tests/worker-test.cjs, plus pytest -q. New tests cover flux-derived east movement, heading interpolation, dry-area stranding, bounding box exits, tracker acceptance/rejection and resets.
 
 Browser verification outstanding: inspect live source/wet placement, replay, pause/resume, three camera perspectives and free navigation, mobile HUD, map style toggle, editing reset, route CSV and performance. Test with actual terrain sources and WebGL. Automated unit tests do not validate flood hydraulics or 3D map rendering.
+
+## v0.3 checks
+
+Both routes / and /studio/ should load on one origin after Docker build. Studio assets should use relative paths. Verify the geographic handoff, DEM failure (must stop unless ?demo=1), persistent fictional/partial DEM warning, exact host/path-restricted tile endpoint, Classic Python and Node tests, and Studio Vitest/lint/build in CI. Browser WebGL2 rendering, real DEM providers and Docker end-to-end deployment still require manual checks. Neither engine is approved for flood warnings.

@@ -9,3 +9,7 @@ Flow: load area -> server assembles fixed-size real elevation grid -> client ini
 Data: elevations in meters relative to source DEM vertical datum (not guaranteed NAVD88); grid dimensions and coordinates from server; cell spacing approximated local WGS84 tangent plane in meters; simulation depths in meters; Q in m³/s and time in seconds. Geo coordinates are [longitude, latitude]. Pixel grid row zero is north, column zero west.
 
 Rendering: public imagery + map labels, maplibre raster-dem 3D geometry, transparent interpolated flood depth color raster. Edited DEM tiles use original Terrarium encoding. The water color is draped, NOT an elevated 3D fluid mesh. Satellite imagery itself does not reflect terrain excavation.
+
+## Advanced Studio
+
+Studio is an independent Vite/Three.js application built by a Docker Node 22 stage. Its compiled assets are served at /studio/ by FastAPI while the Classic MapLibre app stays at /. Switching carries only checked latitude, longitude and extent. No water state or dam edits cross engines. Production Studio tiles route via /api/tiles, a fixed-provider HTTPS map proxy with 64 MB bounded in-memory cache. Real DEM failure is blocking; only explicit ?demo=1 creates labeled fictional terrain. See docs/comparison.md and studio/docs/hydraulics.md.
