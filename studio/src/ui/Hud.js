@@ -84,9 +84,15 @@ export class Hud {
       el('div', { id: 'brand', className: 'panel' }, [
         el('div', { className: 'mark' }),
         el('div', {}, [
-          el('div', { className: 'name', textContent: 'Waterflow' }),
+          el('div', { className: 'name', textContent: 'Waterflow GPU Studio' }),
           el('div', { className: 'version', textContent: this.version }),
         ]),
+        el('a', {
+          className: 'mode-switch',
+          href: '/',
+          textContent: '← Classic 3D',
+          title: 'Return to MapLibre Classic 3D Lab. These engines store separate scenarios.',
+        }),
       ]),
     );
   }

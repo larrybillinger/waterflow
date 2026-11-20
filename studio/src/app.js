@@ -364,6 +364,7 @@ export class WaterflowApp {
     this.hud.setChip('peak', '—');
 
     this.hud.setBusy('ready');
+    document.documentElement.classList.toggle('synthetic-elevation', !!elevation.synthetic);
     this.#progress(100, 'Ready');
 
     if (elevation.synthetic) {

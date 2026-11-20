@@ -6,6 +6,7 @@ on:
       - main
       - feature/3d-flood-lab-v0.1
       - feature/cinematic-flow-tracker-v0.2
+      - feature/integrate-gpu-hydraulic-studio-v0.3
   pull_request:
 
 jobs:
@@ -37,3 +38,30 @@ jobs:
           test -f CHANGELOG.md
           test -f VERSION
           test -f planning/sprints/sprint-001/acceptance-criteria.md
+
+
+  gpu-studio:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: studio
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: studio/package-lock.json
+      - name: Install GPU Studio dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Lint GPU Studio
+        run: npm run lint
+      - name: Run GPU Studio's hydraulic and UI unit tests
+        run: npm test
+      - name: Build GPU Studio for /studio/
+        run: npm run build
+      - name: Verify production entry and bundled assets
+        run: |
+          test -s dist/index.html
+          test -d dist/assets
+          grep -q './assets/' dist/index.html

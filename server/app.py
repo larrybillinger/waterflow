@@ -14,7 +14,8 @@ from . import terrain
 
 logger = logging.getLogger("waterflow")
 ROOT = Path(__file__).resolve().parent.parent
-app = FastAPI(title="Waterflow Terrain Lab", version="0.2.0", docs_url=None, redoc_url=None)
+STUDIO_DIST = ROOT / "studio" / "dist"
+app = FastAPI(title="Waterflow Terrain Lab", version="0.3.0", docs_url=None, redoc_url=None)
 app.add_middleware(GZipMiddleware, minimum_size=1024)
 
 
@@ -36,7 +37,7 @@ class EditRequest(BaseModel):
 
 @app.get("/api/health")
 def health() -> dict[str, str]:
-    return {"status": "ok", "version": "0.2.0"}
+    return {"status": "ok", "version": "0.3.0"}
 
 
 @app.post("/api/scenarios")
@@ -92,6 +93,19 @@ def dem_tile(scenario_id: str, z: int, x: int, y: int) -> Response:
 
 
 app.mount("/static", StaticFiles(directory=ROOT / "web"), name="web")
+
+# Vite produces relative asset URLs, making the independently built
+# Three.js/WebGL2 hydraulic studio available at /studio/ on the same origin.
+if STUDIO_DIST.is_dir():
+    app.mount("/studio", StaticFiles(directory=STUDIO_DIST, html=True), name="studio")
+else:
+    @app.get("/studio/")
+    def missing_studio_build():
+        raise HTTPException(
+            503,
+            "GPU Studio has not been built. Run 'npm ci && npm run build' in studio/ "
+            "or rebuild Docker with 'docker compose up -d --build'.",
+        )
 
 
 @app.get("/")

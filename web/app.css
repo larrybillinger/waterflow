@@ -80,3 +80,15 @@
   .movie-caveat{font-size:9px}
 }
 @media(prefers-reduced-motion:reduce){.film-marker img{animation:none}.cinema-launch{transition:none}}
+
+
+/* Engine navigation: the Classic map remains active and preserves its scenarios. */
+.studio-link{display:inline-flex;align-items:center;gap:9px;padding:9px 12px;border:1px solid rgba(125,222,236,.56);color:#bdf6f7;text-decoration:none;font:700 10px 'DM Sans',sans-serif;letter-spacing:.11em;white-space:nowrap;background:rgba(47,120,137,.14)}
+.studio-link:hover{background:rgba(67,192,210,.29);color:#fff}
+.studio-link span{font-size:15px}
+.studio-promo{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:15px 22px;color:var(--ink);text-decoration:none;border-bottom:1px solid var(--outline);background:linear-gradient(100deg,rgba(34,79,89,.57),rgba(10,43,56,.49))}
+.studio-promo:hover{background:rgba(35,111,127,.47)}
+.studio-promo strong{font:600 12px 'Space Grotesk',sans-serif;display:block}
+.studio-promo small{display:block;font-size:10px;line-height:1.45;color:#91b8c4;margin-top:5px}
+.studio-arrow{font-size:20px;color:var(--accent)}
+@media(max-width:690px){.studio-link{font-size:8px;padding:7px;letter-spacing:0}.studio-link span{display:none}.studio-promo{padding:12px 17px}}
