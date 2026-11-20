@@ -1,0 +1,44 @@
+# Waterflow
+#
+#   docker compose up -d --build
+#   docker compose logs -f waterflow
+#   docker compose down
+#
+# House convention: production on 8098, development on 8099. Copy .env.example to .env
+# and adjust before bringing this up.
+
+services:
+  waterflow:
+    build:
+      context: .
+      args:
+        # Route tiles through the bundled cache. Set to an empty string to have the
+        # browser fetch them directly instead. This is baked in at build time, so
+        # changing it needs a rebuild, not just a restart.
+        VITE_TILE_PROXY: /api/tiles
+    container_name: waterflow
+    restart: unless-stopped
+    ports:
+      - '${APP_PORT:-8098}:8098'
+    environment:
+      APP_PORT: 8098
+      TILE_CACHE_DIR: /app/server/cache
+      TILE_CACHE_MAX_MB: '${TILE_CACHE_MAX_MB:-2048}'
+      TILE_CACHE_TTL_DAYS: '${TILE_CACHE_TTL_DAYS:-90}'
+    volumes:
+      # The tile cache is worth keeping across rebuilds: it is slow to warm and entirely
+      # regenerable, so a named volume rather than a bind mount.
+      - waterflow-tiles:/app/server/cache
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:8098/healthz').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  waterflow-tiles:
