@@ -65,3 +65,33 @@ jobs:
           test -s dist/index.html
           test -d dist/assets
           grep -q './assets/' dist/index.html
+
+
+  integration-smoke:
+    runs-on: ubuntu-latest
+    needs: [validate, gpu-studio]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and start the combined container
+        run: docker compose up -d --build
+      - name: Test both HTTP applications and bundled studio script
+        run: |
+          for i in $(seq 1 35); do
+            if curl -fsS http://127.0.0.1:8086/api/health > /tmp/waterflow-health.json; then break; fi
+            sleep 2
+          done
+          grep -q '"status":"ok"' /tmp/waterflow-health.json
+          curl -fsS http://127.0.0.1:8086/ | grep -q 'id="map"'
+          curl -fsS http://127.0.0.1:8086/studio/ > /tmp/waterflow-studio.html
+          grep -q 'id="viewport"' /tmp/waterflow-studio.html
+          grep -q './assets/' /tmp/waterflow-studio.html
+          ASSET=$(grep -oE '\./assets/[^"]+\.js' /tmp/waterflow-studio.html | head -1)
+          test -n "$ASSET"
+          ASSET_PATH=$(printf '%s' "$ASSET" | sed 's#^\./##')
+          curl -fsS "http://127.0.0.1:8086/studio/$ASSET_PATH" -o /dev/null
+      - name: Show startup logs when unhealthy
+        if: failure()
+        run: docker compose logs --tail 150
+      - name: Stop test deployment
+        if: always()
+        run: docker compose down --remove-orphans
