@@ -1,33 +1,19 @@
 # Changelog
 
+## v0.3.0 — 2026-11-19
+
+- Added Claude-derived Advanced Dam Studio under /studio/, preserving Classic MapLibre Terrain Lab at /.
+- Advanced Studio offers reservoir creation, evolving dam-breach model, WebGL2 GPU flood routing, raised water with shaders, richer terrain edits, D8 stations, hydrographs and five cinematic views.
+- Added two-way geographic location handoff, same-origin Docker build and combined CI.
+- Added strictly allowlisted HTTPS terrain/imagery tile proxy.
+- Replaced Studio's automatic fictional terrain fallback with explicit ?demo=1; permanently label synthetic/partial data.
+- Corrected Studio package license metadata to GPL-3.0 to agree with actual LICENSE.
+- Documented distinct hydraulic solvers and unresolved real-world calibration.
+
 ## v0.2.0 — 2026-11-19
 
-### Added
-- Immersive cinematic camera following a tagged wet model cell.
-- Stylized raft/rider and high-visibility water tracer modes.
-- Flux-derived passive marker tracking with dry-ground stranding and domain exit.
-- Chase, aerial, wide and free camera controls.
-- Reduced simulation pacing while filming, recorded route replay and scrub.
-- Export of modeled route position, water depth, speed, distance and state as CSV.
-- Automated tracer advection, boundary and path interpolation tests.
-
-### Limitations
-- Raft visual is not a physical flotation or collision model.
-- Replay does not rewind the depth shading; no downloadable video recording.
-- Browser performance and hydraulic validation remain unverified.
+- Added passive water-flow tracking, illustrated raft movie mode, recording and route CSV.
 
 ## v0.1.0 — 2026-11-19
 
-### Added
-- 3D fullscreen geographic map with satellite/street layers, orbit/tilt and terrain.
-- Terrain loading from public Mapzen/AWS Terrarium elevation tiles.
-- In-memory study scenarios with terrain sculpting reflected in 3D terrain tiles.
-- Experimental 2D finite-volume local-inertial water routing in a Web Worker.
-- Point discharge, time controls, depth/peak overlays, inspection readouts and JSON scenario export.
-- Whole-earth globe toggle and downstream straight-line depth station sampling with CSV export.
-- Numerical mass-balance/positivity tests and face-buffer reuse to reduce memory churn.
-- FastAPI/Docker app, project planning, model limitations and basic tests.
-
-### Known issues
-- Uncalibrated physical model; simplistic point source and boundary condition, no true reservoir storage or evolving breach.
-- Upstream terrain / imagery providers and hosted MapLibre scripts require internet access.
+- First MapLibre 3D terrain app with public DEM, digging/raising, Worker solver and downstream depth estimates.

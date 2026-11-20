@@ -14,3 +14,10 @@
 2026-11-19: Pace cinematic live model to approximately 8 simulated seconds per real second; preserve fast mode outside cinema.
 2026-11-19: Recorded route replay is path-only, does not rewind flood raster, and is not an MP4 export.
 2026-11-19: Keep latest 4,500 sampled points; treat depths under 0.1 m as stranded.
+
+2026-11-19: Keep the two incompatible numerical engines as separate Classic and Advanced Studio workspaces on a single host. Do not suggest their depth outputs are interchangeable.
+2026-11-19: Only URL latitude, longitude and limited study-area extent are transferred when switching. No dam, reservoir, terrain edit or water-grid transfer.
+2026-11-19: Studio's stronger reservoir/breach GPU and water-rendering features become accessible without removing Classic's globe/point-release functionality.
+2026-11-19: Studio's synthetic valley requires explicit ?demo=1 and visible warning; real-terrain failure must otherwise stop.
+2026-11-19: Align Claude's declared MIT license metadata with the GPL-3.0 repository LICENSE.
+2026-11-19: Build the Studio with Node inside Docker and expose a narrowly allowlisted FastAPI tile proxy at /api/tiles.

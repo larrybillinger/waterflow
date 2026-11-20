@@ -6,15 +6,16 @@ from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.gzip import GZipMiddleware
-from fastapi.responses import FileResponse, JSONResponse, Response
+from fastapi.responses import FileResponse, JSONResponse, Response, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from . import terrain
+from .tile_proxy import tile_proxy
 
 logger = logging.getLogger("waterflow")
 ROOT = Path(__file__).resolve().parent.parent
-app = FastAPI(title="Waterflow Terrain Lab", version="0.2.0", docs_url=None, redoc_url=None)
+app = FastAPI(title="Waterflow Terrain Lab", version="0.3.0", docs_url=None, redoc_url=None)
 app.add_middleware(GZipMiddleware, minimum_size=1024)
 
 
@@ -34,9 +35,14 @@ class EditRequest(BaseModel):
     cells: list[CellEdit] = Field(min_length=1, max_length=12000)
 
 
+@app.get("/api/tiles")
+async def public_tile_proxy(u: str) -> Response:
+    return await tile_proxy(u)
+
+
 @app.get("/api/health")
 def health() -> dict[str, str]:
-    return {"status": "ok", "version": "0.2.0"}
+    return {"status": "ok", "version": "0.3.0"}
 
 
 @app.post("/api/scenarios")
@@ -90,6 +96,21 @@ def dem_tile(scenario_id: str, z: int, x: int, y: int) -> Response:
         raise HTTPException(502, "Elevation tile unavailable") from exc
     return Response(content, media_type="image/png", headers={"Cache-Control": "no-store"})
 
+
+# Both simulation engines are hosted on one origin. Advanced Studio is built
+# from studio/ by the Docker multi-stage builder; in local development run
+# "npm --prefix studio run build" before starting uvicorn.
+STUDIO_DIST = ROOT / "studio" / "dist"
+if STUDIO_DIST.is_dir():
+    app.mount("/studio", StaticFiles(directory=STUDIO_DIST, html=True), name="studio")
+else:
+    @app.get("/studio/")
+    def studio_not_built() -> JSONResponse:
+        return JSONResponse({"error": "Advanced Studio assets not built. Run npm --prefix studio ci && npm --prefix studio run build."}, status_code=503)
+
+@app.get("/studio")
+def studio_redirect() -> RedirectResponse:
+    return RedirectResponse("/studio/", status_code=307)
 
 app.mount("/static", StaticFiles(directory=ROOT / "web"), name="web")
 

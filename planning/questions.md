@@ -9,3 +9,8 @@
 - Should future v0.3 include an actual downloadable WebM/MP4, and would saved movie frames be appropriate under imagery licensing?
 - Should movie mode use a physically raised surface and true 3D raft/character with interaction physics?
 - Should we store time-indexed water grids so route replay shows matching historical water conditions?
+
+- Should Studio eventually become the default interface, with Classic globe exploration at /classic/?
+- Which surveyed flood data, HEC-RAS reference model and vertical datum should validate both engines?
+- Do we need a common scenario save/load and carefully specified source discriminator before transferring data?
+- Is Studio WebGL2 performance acceptable on intended phones, laptops and the deployment host?

@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="dark" />
+    <title>Waterflow — dam failure flood simulator</title>
+    <meta
+      name="description"
+      content="Browser-based dam failure flood simulator. Public elevation data, a published 2D hydraulic model on the GPU, and an explorable 3D view."
+    />
+    <meta name="theme-color" content="#0a1018" />
+  </head>
+
+  <body>
+    <!-- The canvas owns the whole viewport. Everything else floats over it. -->
+    <canvas id="viewport"></canvas>
+    <a id="classic-return" href="/" title="Back to the interactive geographic terrain lab"
+      style="position:fixed;z-index:999;right:16px;top:12px;padding:10px 13px;border:1px solid rgba(137,229,231,.4);background:rgba(6,23,34,.9);color:#b4f7f2;font:600 11px system-ui,sans-serif;letter-spacing:.045em;text-decoration:none">← TERRAIN LAB</a>
+    <div id="studio-data-warning" hidden role="alert"
+      style="position:fixed;z-index:999;left:50%;transform:translateX(-50%);bottom:12px;max-width:95vw;background:#492b16ee;border:1px solid #eac397;color:#fff1d4;padding:9px 18px;text-align:center;font:700 11px system-ui,sans-serif;letter-spacing:.045em"></div>
+
+    <div id="loading">
+      <div class="inner">
+        <h1>Waterflow</h1>
+        <p class="tagline">
+          Dam failure flood simulation from public elevation data, solved on the GPU and
+          rendered as somewhere you can fly around.
+        </p>
+        <div class="bar"><div class="bar-fill"></div></div>
+        <div class="step">Starting</div>
+        <div class="error" style="display: none"></div>
+      </div>
+    </div>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

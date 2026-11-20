@@ -31,6 +31,13 @@ jobs:
           node --check web/movie.js
           node tests/flow-tracker-test.cjs
           node tests/worker-test.cjs
+      - name: Install Advanced Studio packages
+        run: npm ci --prefix studio --no-audit --no-fund
+      - name: Verify Advanced Studio
+        run: |
+          npm run --prefix studio lint
+          npm run --prefix studio test
+          npm run --prefix studio build
       - name: Check required project files
         run: |
           test -f AGENTS.md

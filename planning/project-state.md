@@ -1,7 +1,9 @@
-# Project state — 2026-11-19
+# Project State — 2026-11-19
 
-Current version: v0.2.0 experimental. Sprint 001 was merged into main and passed automated tests. Sprint 002 adds a cinematic passive water tracker with an illustrated raft/rider, chase camera, recorded path replay and CSV output. The feature is under review on feature/cinematic-flow-tracker-v0.2.
+Version v0.3.0 (experimental). Sprint 003 is active on feature/integrate-advanced-studio-v0.3.
 
-Automated tests are configured for API, hydraulic solver, tracer integrator and JS syntax. Browser/WebGL manual validation, terrain-provider end-to-end testing, Docker deployment and hydraulic calibration are **not complete**. Do not portray this prototype as an operational flood warning or real-life raft safety model.
+The original Classic Terrain Lab v0.2 (MapLibre global 3D map, terrain editing, Worker point-release model and raft marker) remains at /. Claude's independent Three.js/WebGL2 GPU flood-simulator branch is integrated at /studio/ as Advanced Dam Studio. Its strengths include DEM-based reservoir construction, dam placement, progressive breach, detailed water shader, terrain undo, valley station routing and five camera modes. Geographic location passes between tools; numerical state does not.
 
-Future priorities: USGS 3DEP, reservoir geometry and breach hydrographs, verified 2D physics, synchronized time-indexed flood replay, 3D water geometry and actual movie recording.
+Production Vite assets compile in Docker and are served through the same FastAPI process. Fixed-provider tile proxy, deliberate offline synthetic-demo choice and permanent DEM warning address data fidelity and CORS concerns. Studio license metadata is corrected to GPL-3.0.
+
+Classic Python/Node tests and Studio test/lint/build are expected in CI. Integrated Docker routes, real DEM sources and live browser/WebGL scene have **not** yet been verified here; hydraulic measurements are not calibrated.

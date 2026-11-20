@@ -80,3 +80,11 @@
   .movie-caveat{font-size:9px}
 }
 @media(prefers-reduced-motion:reduce){.film-marker img{animation:none}.cinema-launch{transition:none}}
+
+/* Advanced Studio integration; keep the terrain dominant and the link understated. */
+.advanced-section{background:linear-gradient(120deg,rgba(83,149,163,.12),transparent)}
+.studio-launch{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:12px;background:#163744;border-left:2px solid var(--accent);padding:14px 13px;color:#eafaff;text-decoration:none;transition:background .15s}
+.studio-launch:hover{background:#275263}
+.studio-launch strong{display:block;font:600 13px 'Space Grotesk',sans-serif}
+.studio-launch small{display:block;color:#9cb4bf;font-size:10px;line-height:1.45;margin-top:5px}
+.studio-launch>span:last-child{color:var(--accent);font-size:20px}

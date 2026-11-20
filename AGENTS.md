@@ -9,3 +9,7 @@ Architect plans goals, constraints, changes, risks and acceptance tests; builder
 UI rules: the map fills the viewport; clean, high-contrast professional HUD; avoid decorative borders, clutter and nonfunctional controls. Keyboard, focus, attribution and responsive layouts matter. Don't trade hydraulic accuracy for aesthetics; label unvalidated modeling clearly. No claim that 3D depiction or depth is authoritative. Don't treat a synthetic breach source as a real dam-failure estimate.
 
 No authentication in v0.1; binds localhost by default. Public hosting requires rate limiting, access controls and proxy hardening. Scenario states are in-memory and transient. No external mutable API is invoked except fetching public elevation data.
+
+## Studio integration
+
+Classic lives in web/ and server/terrain.py; Claude's Advanced Studio lives in studio/. Read studio/AGENTS.md and studio/docs/hydraulics.md before changes there. Never silently combine numerical arrays or breach forcing. Only geography is carried between engines. Fictional terrain is opt-in and permanently labeled. Keep v0.3 test and validation limitations documented.

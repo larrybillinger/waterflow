@@ -2,9 +2,23 @@
 
 A full-screen, 3D, map-based terrain and flood experimentation lab. Fly across real-world terrain, excavate or raise land with a brush, release a hypothetical flow, and inspect animated depth, arrival time, and high-water levels.
 
-**Status: v0.2.0 experimental prototype. NOT a flood forecast, evacuation tool, or engineering-grade dam-break model.**
+**Status: v0.3.0 experimental suite: two independent hydraulic engines, neither calibrated. NOT a flood forecast, evacuation tool, or engineering-grade dam-break model.**
 
-## What works in v0.2
+## Two integrated workspaces
+
+| Feature | Classic Terrain Lab at / | Advanced Dam Studio at /studio/ |
+| --- | --- | --- |
+| Camera | Global MapLibre satellite and globe navigation | Three.js locally detailed 3D terrain and cinematic views |
+| Source | Prescribed point discharge | Built dam, reservoir storage and progressive breach |
+| Solver | 2D Worker local-inertial model | WebGL2 GPU local-inertial flood solver |
+| Water view | Depth-colored map overlay | Raised surface, transparent depth, shader waves, foam, sediment and lighting |
+| Editing | Excavate and raise | More tools, undo |
+| Stations | Straight sampling line | Valley-route cross sections, width and velocity |
+| Cinema | Illustrated raft/dot and 3 views | 3D raft with 5 camera modes |
+
+Switching preserves latitude, longitude and study-area extent, **not** water, terrain edits or dam state. See docs/comparison.md.
+
+## What works in v0.2 (Classic Terrain Lab)
 
 - Pitched, rotatable 3D earth-style map with satellite and street styles.
 - Public Mapzen/AWS elevation tiles provide the bare-earth digital elevation model (DEM); never substitute invented elevation on retrieval failures.
@@ -19,6 +33,23 @@ A full-screen, 3D, map-based terrain and flood experimentation lab. Fly across r
 - Cinema mode: tag a wet simulated water point, choose a visual raft with rider or a glowing tracer dot, and follow the modeled downstream flow through a smooth 3D camera.
 - Switch between chase, aerial and wide camera perspectives, or drag to return to free navigation.
 - Replay/scrub the recorded route at selectable speed, or export the path as CSV. Movie mode is in-browser playback, not an MP4 exporter.
+
+## Run both workspaces
+
+Docker builds Studio with Node and serves it alongside the original FastAPI application:
+
+    docker compose up -d --build
+
+Classic: http://localhost:8086/ ; Advanced: http://localhost:8086/studio/
+
+Develop both locally:
+
+    npm ci --prefix studio
+    npm run --prefix studio build
+    python -m pip install -r requirements.txt
+    uvicorn server.app:app --host 127.0.0.1 --port 8086
+
+The Advanced Studio refuses to invent terrain if real DEM retrieval fails. To experiment with an explicitly fictional valley, choose /studio/?demo=1. Its warning remains visible on the screen.
 
 ## Run locally
 
@@ -56,6 +87,10 @@ The tracked raft is **not** an independently modeled buoyant object or a route s
 
 The browser stores at most the latest 4,500 route samples. **Replay moves only the tracked marker; the flood-depth overlay stays at its latest simulated frame** and does not rewind. Neither video recording nor exported MP4 is included in v0.2.
 
+## Advanced Studio
+
+Claude's version adds dam construction, reservoir impoundment, evolving breach parameters, a GPU water model, physically raised water geometry, richer terrain sculpting, downstream flood cross sections and five cinematic camera modes. Its extensive numerical tests do not establish real-world flood prediction accuracy.
+
 ## Model assumptions & important limitations
 
 This version **does not** compute a dam breach from reservoir storage, bathymetry, dam construction, breach geometry, or breach formation time. User-entered point release is a prescribed hydrograph, not a derived dam-failure discharge. Bare-earth DEMs do not faithfully depict underwater channels, bridge decks, culverts, levee interiors, or reservoirs. Initial conditions are dry; no observed streamflow or live weather is assimilated. Boundary cells use a simplified outflow approximation; spatially uniform roughness is assumed. The 3D water heatmap is draped on the terrain rather than a physically raised water surface. Peak depths are simulated estimates at grid-cell scale, **not actual surveyed high-water marks**.
@@ -74,12 +109,25 @@ For credible real-world flood maps, integrate local USGS 3DEP 1 m/3 m terrain an
 
 ## Repository organization
 
-- web/ — full-screen map UI, Web Worker solver, passive tracer, movie controller and illustrated raft asset.
+- web/ — Classic Terrain Lab and Worker solver.
+- studio/ — Advanced Dam Studio from Claude, with GPU rendering, dam/breach, water mesh and cinematic 3D camera.
+- server/tile_proxy.py — tightly restricted public map tile proxy.
 - server/ — FastAPI static host and DEM tile/scenario endpoints.
 - tests/ — DEM conversion, geometry and scenario API tests.
 - docs/ — architecture, model notes, permissions and validation.
 - planning/ — project decisions, risks and sprint acceptance criteria.
 - notes/release-notes/ — version release history.
+
+## Validation
+
+    python -m pytest -q
+    node tests/worker-test.cjs
+    node tests/flow-tracker-test.cjs
+    npm run --prefix studio lint
+    npm run --prefix studio test
+    npm run --prefix studio build
+
+Automated checks do not replace an actual 3D browser test with public elevation data.
 
 ## Updating
 
