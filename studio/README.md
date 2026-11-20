@@ -50,6 +50,9 @@ board, orbit it, or tag a spot and hold the camera there while the water arrives
 
 ## Quick start
 
+In the integrated Waterflow site, open `/studio/` for this engine or `/` to return to the Classic Terrain Lab. They currently share the selected geographic centre when switching, not dam geometry or simulation state.
+
+
 ```bash
 npm install
 npm run dev

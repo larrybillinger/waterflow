@@ -195,10 +195,10 @@ export async function loadElevationGrid(domain, options = {}) {
 }
 
 /**
- * Build a synthetic valley for offline use and for tests.
+ * Build a synthetic valley ONLY for the explicitly requested demo mode and tests.
  *
- * Not a decoration. If the elevation source is unreachable the app must still start and
- * still demonstrate the physics, otherwise a network problem looks like a broken build.
+ * Real elevation failures stop simulations in the normal mode. This function may
+ * only be selected via an explicit ?demo=1 user choice or by offline tests.
  * The shape is a V-shaped valley descending along +z with meanders and roughness, which
  * is enough to exercise routing, station placement and the solver.
  *

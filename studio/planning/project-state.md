@@ -1,6 +1,8 @@
 # Project State
 
 Last updated: 2026-11-19
+
+Integrated into the Waterflow v0.3.0 site at `/studio/`, alongside the Classic Terrain Lab. The advanced engine retains its own v0.1.0 internal implementation version. New cross-engine navigation carries approximate geographic centres, not hydraulic scenario state. Real DEM failures require explicit `?demo=1` fictional-terrain opt-in. This integration has its own CI and manual validation requirements.
 Current version: v0.1.0
 Active sprint: `planning/sprints/sprint-001`
 Active branch: `claude/flood-simulator`

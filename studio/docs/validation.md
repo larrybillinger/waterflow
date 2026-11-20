@@ -41,9 +41,7 @@ handlers are exercised too. Screenshots go to `verification/`.
 Three real defects were caught by this harness before the first release, all of which
 produced plausible-looking output. It is worth running, not just worth having.
 
-The machine running it has no route to the public tile endpoints, so the harness blocks
-them deliberately. That also exercises the offline fallback, which matters: a network
-failure must not leave the user with a blank screen.
+The test machine has no route to public tile endpoints; the harness blocks them deliberately and opens with `?demo=1`. This exercises clearly labeled, deliberately selected fictional terrain, not an invisible fallback. In normal mode the same tile failure must stop the simulation instead of inventing geography.
 
 ## Release checklist
 

@@ -145,8 +145,7 @@ texture.
 Per the Logging Rule in `AGENTS.md`, a failure names what failed and where. An elevation
 tile failure reports the tile, the URL and the cause. A missing WebGL extension reports
 the extension and the renderer string. A single failed tile is filled from its neighbours
-rather than aborting the load; a total failure falls back to synthetic terrain with a
-clear notice, because a network problem should not look like a broken build.
+rather than aborting the load; a total failure blocks real-terrain simulation with an actionable error. Fictional terrain is available only when the user deliberately visits the explicit `?demo=1` mode. A generated landscape must never be presented as actual elevation data.
 
 ## Why there is no framework
 
