@@ -12,3 +12,4 @@ GPU Studio preserves Claude's reservoir, progressive breach, hydraulic roughness
 Automated CI builds both modes and runs their tests. Live browser, external imagery/DEM, Docker end-to-end and matched-model hydraulic calibration remain outstanding. Never use the outputs as validated dam-failure predictions or emergency guidance.
 
 Next steps: compare both engines on common DEMs, establish a scenario interchange format, choose a default UI after practical user testing, add real-world calibration and optionally synchronize video replay.
+Mode-switch links carry validated geographic center coordinates; they do not carry scenario state.

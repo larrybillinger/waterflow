@@ -131,3 +131,5 @@ The GPU Studio displays a persistent warning when it falls back to synthetic ter
 
 
 Requires external providers and WebGL. Fine terrain features smaller than model cells cannot be resolved. Flood fronts and lateral flows are qualitative approximations; documented validation is required before promoting any numerical results as real-world predictions.
+
+**Location handoff:** switching from one engine to the other carries latitude/longitude in the URL (subject to validation). Terrain, source discharge, dam, reservoir and trajectory are not transferred.

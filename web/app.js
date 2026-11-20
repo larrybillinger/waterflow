@@ -464,6 +464,24 @@
     map.setStyle(style==='satellite'?imageryStyle:streetStyle);
   }
   function initMap() {
+    const urlParams=new URLSearchParams(window.location.search);
+    if(urlParams.has('lat') && urlParams.has('lon')){
+      const incomingLat=Number(urlParams.get('lat')),incomingLon=Number(urlParams.get('lon'));
+      if(Number.isFinite(incomingLat) && Number.isFinite(incomingLon) &&
+          Math.abs(incomingLat)<=80 && Math.abs(incomingLon)<=180){
+        $('latitude').value=incomingLat;
+        $('longitude').value=incomingLon;
+      }
+    }
+    $('open-studio').addEventListener('click',event=>{
+      const lat=Number($('latitude').value),lon=Number($('longitude').value);
+      if(Number.isFinite(lat)&&Number.isFinite(lon)&&Math.abs(lat)<=80&&Math.abs(lon)<=180) {
+        const url=new URL('/studio/',window.location.origin);
+        url.searchParams.set('lat',lat.toFixed(5));
+        url.searchParams.set('lon',lon.toFixed(5));
+        event.currentTarget.href=url.pathname+url.search;
+      }
+    });
     if(!window.maplibregl){fail(new Error('Map renderer unavailable. Check internet access or CDN.'));return;}
     initializeWorker();wire();
     map=new maplibregl.Map({

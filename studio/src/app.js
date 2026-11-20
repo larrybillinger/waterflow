@@ -18,6 +18,7 @@
 import * as THREE from 'three';
 
 import { defaults, performance as perfConfig, visual } from './config.js';
+import { initialLocation } from './data/initialLocation.js';
 import { createDomain, gridToScene, formatLatLon } from './data/geo.js';
 import { loadElevationGrid, createSyntheticValley } from './data/demLoader.js';
 import { loadImagery } from './data/imageryLoader.js';
@@ -165,9 +166,12 @@ export class WaterflowApp {
     this.#progress(5, 'Starting the renderer');
 
     try {
+      const incoming=initialLocation(window.location.search,defaults);
+      this.hud.controls.lat.input.value=String(incoming.lat);
+      this.hud.controls.lon.input.value=String(incoming.lon);
       await this.loadDomain({
-        lat: defaults.lat,
-        lon: defaults.lon,
+        lat: incoming.lat,
+        lon: incoming.lon,
         domainMeters: defaults.domainMeters,
         gridSize: defaults.gridSize,
         imagerySource: defaults.imagerySource,
@@ -274,6 +278,13 @@ export class WaterflowApp {
     this.viewer.disposeDomain();
 
     this.domain = domain;
+    const switchLink = this.hud.root.querySelector('.mode-switch');
+    if(switchLink){
+      const target=new URL('/',window.location.origin);
+      target.searchParams.set('lat',lat.toFixed(5));
+      target.searchParams.set('lon',lon.toFixed(5));
+      switchLink.href=target.pathname+target.search;
+    }
     this.pristineGrid = elevation.grid;
     this.terrainGrid = cloneGrid(elevation.grid);
 

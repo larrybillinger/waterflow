@@ -46,3 +46,7 @@ Classic currently has a conservative policy of rejecting absent real DEM entirel
 3. Evaluate whether Studio should replace the Classic homepage. Retain Classic's globe and simple release workflow if doing so.
 4. Bring synchronized movie frame capture and video exports after browser codec and imagery licensing checks.
 5. Introduce high-resolution lidar DEM import and physically relevant infrastructure representation.
+
+## Cross-mode geographic handoff
+
+The mode-switch links preserve only the current latitude/longitude center. No hydraulic parameters or editing state cross the boundary. Coordinates are validated to keep both applications within their elevation provider supported range; invalid query coordinates revert to each engine's defaults. This enables a fairer visual starting point without pretending calculations are identical.

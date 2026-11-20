@@ -21,3 +21,4 @@
 2026-11-19: Docker builds Studio with Node 22/Vite and copies static assets into the FastAPI image; Claude's optional Express tile proxy is not used.
 2026-11-19: Preserve upstream provenance at Claude commit 1445719f22388830c07f81d3044c9ffb0f52f345. Unit tests and source equations do not certify real-world accuracy.
 2026-11-19: Mark Studio synthetic elevation fallback persistently; Classic continues to fail if real DEM cannot be fetched.
+2026-11-19: Mode links may transfer a validated geographic center (lat/lon) only; all hydraulic and edit state remains independent.

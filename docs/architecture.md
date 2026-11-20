@@ -19,3 +19,5 @@ Docker first builds studio/ with Node 22 and Vite (relative asset base), then co
 Classic retains Python-hosted public DEM tiles, server-side terrain edit sessions and a JavaScript worker that routes prescribed discharge. GPU Studio directly fetches and resamples terrain tiles, constructs dam terrain/reservoir storage, runs progressing breaches in floating point GPU textures, and renders 3D terrain and a distinct water mesh through Three.js. Each keeps its own boundary conditions, grids, outputs and scenarios. There is no shared state or data interchange in v0.3.
 
 GPU Studio's standalone Express tile proxy exists in studio/server but is not active in the combined Python Docker container; the Vite build uses direct public URLs.
+
+The top-level mode links transfer only validated latitude and longitude via URL parameters. They never transfer water state, dam geometry, scenario files or simulation output. Studio's initial URL location parser has dedicated tests and refuses invalid/out-of-range coordinates.
