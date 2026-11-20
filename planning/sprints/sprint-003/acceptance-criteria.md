@@ -11,3 +11,5 @@
 - [ ] Studio package metadata matches GPL-3.0 LICENSE.
 - [ ] Classic Python and JS tests, Studio lint/tests/build pass in CI.
 - [ ] Live 3D browser, real provider and Docker tests are completed before a production claim.
+
+- [x] Automated Docker HTTP smoke test verifies both frontends, a bundled Studio JS asset and rejection of an unapproved tile proxy request (v0.3.1).

@@ -1,0 +1,14 @@
+# Exclude credentials, local installations and generated build outputs.
+.git
+**/.env
+**/node_modules
+**/dist
+**/.venv
+**/__pycache__
+**/*.pyc
+**/.pytest_cache
+**/coverage
+**/verification
+**/.vite
+**/*.log
+.DS_Store

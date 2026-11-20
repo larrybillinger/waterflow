@@ -16,3 +16,7 @@ Browser verification outstanding: inspect live source/wet placement, replay, pau
 ## v0.3 checks
 
 Both routes / and /studio/ should load on one origin after Docker build. Studio assets should use relative paths. Verify the geographic handoff, DEM failure (must stop unless ?demo=1), persistent fictional/partial DEM warning, exact host/path-restricted tile endpoint, Classic Python and Node tests, and Studio Vitest/lint/build in CI. Browser WebGL2 rendering, real DEM providers and Docker end-to-end deployment still require manual checks. Neither engine is approved for flood warnings.
+
+## Automated integrated-runtime check (v0.3.1)
+
+The GitHub Actions integration-smoke job builds the combined Docker image and starts it on localhost:8086. It checks /api/health, Classic root HTML and its Studio navigation, Studio HTML and its Classic return link, an actual generated Studio JS bundle, and HTTP 400 for an unallowlisted host at /api/tiles. Failure prints container logs. This is an HTTP and build test, not a browser/WebGL or hydraulic calibration test.

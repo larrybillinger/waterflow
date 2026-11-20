@@ -7,3 +7,5 @@ The original Classic Terrain Lab v0.2 (MapLibre global 3D map, terrain editing, 
 Production Vite assets compile in Docker and are served through the same FastAPI process. Fixed-provider tile proxy, deliberate offline synthetic-demo choice and permanent DEM warning address data fidelity and CORS concerns. Studio license metadata is corrected to GPL-3.0.
 
 Classic Python/Node tests and Studio test/lint/build are expected in CI. Integrated Docker routes, real DEM sources and live browser/WebGL scene have **not** yet been verified here; hydraulic measurements are not calibrated.
+
+Runtime integration enhancement v0.3.1: GitHub Actions now checks a full Docker image, two HTTP applications and a restricted-proxy rejection path. Scientific validation and live browser graphics are still pending.

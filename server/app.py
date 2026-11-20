@@ -15,7 +15,7 @@ from .tile_proxy import tile_proxy
 
 logger = logging.getLogger("waterflow")
 ROOT = Path(__file__).resolve().parent.parent
-app = FastAPI(title="Waterflow Terrain Lab", version="0.3.0", docs_url=None, redoc_url=None)
+app = FastAPI(title="Waterflow Terrain Lab", version="0.3.1", docs_url=None, redoc_url=None)
 app.add_middleware(GZipMiddleware, minimum_size=1024)
 
 
@@ -42,7 +42,7 @@ async def public_tile_proxy(u: str) -> Response:
 
 @app.get("/api/health")
 def health() -> dict[str, str]:
-    return {"status": "ok", "version": "0.3.0"}
+    return {"status": "ok", "version": "0.3.1"}
 
 
 @app.post("/api/scenarios")

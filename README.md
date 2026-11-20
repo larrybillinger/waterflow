@@ -137,3 +137,7 @@ Automated checks do not replace an actual 3D browser test with public elevation 
 ## Known issues
 
 Requires external providers and WebGL. Fine terrain features smaller than model cells cannot be resolved. Flood fronts and lateral flows are qualitative approximations; documented validation is required before promoting any numerical results as real-world predictions.
+
+## Integrated runtime verification
+
+GitHub Actions builds the Docker image and fetches Classic, GPU Studio, a compiled Studio JavaScript bundle, and API health; it also checks that the tile proxy rejects an unapproved external host. The same checks do not run a graphical WebGL2 browser, and the two engines remain uncalibrated. Container CI should pass before merging a release.
