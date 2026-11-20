@@ -11,6 +11,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from . import terrain
+from .tile_proxy import tile_proxy
 
 logger = logging.getLogger("waterflow")
 ROOT = Path(__file__).resolve().parent.parent
@@ -32,6 +33,11 @@ class CellEdit(BaseModel):
 
 class EditRequest(BaseModel):
     cells: list[CellEdit] = Field(min_length=1, max_length=12000)
+
+
+@app.get("/api/tiles")
+async def public_tile_proxy(u: str) -> Response:
+    return await tile_proxy(u)
 
 
 @app.get("/api/health")

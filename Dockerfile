@@ -4,6 +4,8 @@ WORKDIR /studio
 COPY studio/package.json studio/package-lock.json ./
 RUN npm ci --no-audit --no-fund
 COPY studio/ ./
+ARG VITE_TILE_PROXY=/api/tiles
+ENV VITE_TILE_PROXY=$VITE_TILE_PROXY
 RUN npm run build
 
 FROM python:3.12-slim
