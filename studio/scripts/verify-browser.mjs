@@ -19,7 +19,7 @@ import puppeteer from 'puppeteer-core';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-const URL = process.argv[2] ?? 'http://localhost:8099/';
+const URL = process.argv[2] ?? 'http://localhost:8099/?demo=1';
 const OUT = resolve('verification');
 mkdirSync(OUT, { recursive: true });
 

@@ -164,11 +164,23 @@ export class WaterflowApp {
   async start() {
     this.#progress(5, 'Starting the renderer');
 
+    // Carry the chosen study-area centre from the classic map into Studio.
+    const query = new URLSearchParams(window.location.search);
+    const latitude = Number(query.get('lat'));
+    const longitude = Number(query.get('lon'));
+    const extent = Number(query.get('extent'));
+    const lat = query.has('lat') && Number.isFinite(latitude) && Math.abs(latitude) <= 80
+      ? latitude : defaults.lat;
+    const lon = query.has('lon') && Number.isFinite(longitude) && Math.abs(longitude) <= 180
+      ? longitude : defaults.lon;
+    const domainMeters = query.has('extent') && Number.isFinite(extent) &&
+      extent >= 2000 && extent <= 32000 ? extent : defaults.domainMeters;
+    this.hud.controls.lat.input.value = String(lat);
+    this.hud.controls.lon.input.value = String(lon);
+    this.hud.controls.domain.setValue(domainMeters);
     try {
       await this.loadDomain({
-        lat: defaults.lat,
-        lon: defaults.lon,
-        domainMeters: defaults.domainMeters,
+        lat, lon, domainMeters,
         gridSize: defaults.gridSize,
         imagerySource: defaults.imagerySource,
       });
@@ -228,7 +240,14 @@ export class WaterflowApp {
         },
       });
     } catch (error) {
-      // A network failure must not leave a blank screen. Fall back to a synthetic valley
+      // Synthesized terrain must never silently impersonate actual topography.
+      // Offline demos are deliberately opt-in via ?demo=1.
+      const explicitDemo = new URLSearchParams(window.location.search).get('demo') === '1';
+      if (!explicitDemo) {
+        throw new Error('Could not retrieve real terrain for this location. The simulation was not started with fabricated elevations. ' +
+          'Check public elevation tile access, or explicitly use ?demo=1 to explore a clearly labeled fictional valley. Cause: ' + error.message);
+      }
+      // An explicitly requested offline demo may use the synthetic valley.
       // so the physics and the interface can still be used and understood, and say so
       // plainly rather than passing it off as real terrain.
       console.warn('[waterflow] elevation unavailable, using synthetic terrain:', error);
@@ -346,6 +365,20 @@ export class WaterflowApp {
     this.overlayMode = 'none';
     this.viewer.terrain.setOverlay('none');
 
+    const dataBanner = document.getElementById('studio-data-warning');
+    if (dataBanner) {
+      dataBanner.hidden = !elevation.synthetic && elevation.failedTiles.length === 0;
+      dataBanner.textContent = elevation.synthetic
+        ? 'DEMO ONLY — GENERATED LANDSCAPE. NOT A REAL LOCATION OR ELEVATION MODEL.'
+        : elevation.failedTiles.length + ' ELEVATION TILES WERE MISSING AND INTERPOLATED. RESULTS ARE UNCERTAIN.';
+    }
+    const classicReturn = document.getElementById('classic-return');
+    if (classicReturn) {
+      const url = new URL('/', window.location.origin);
+      url.searchParams.set('lat', String(lat));
+      url.searchParams.set('lon', String(lon));
+      classicReturn.href = url.pathname + url.search;
+    }
     this.hud.setDataInfo({
       elevationSource: elevation.synthetic ? 'Synthetic (offline)' : ELEVATION.terrarium.label,
       zoom: domain.zoom,

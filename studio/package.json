@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "Browser-based dam failure flood simulator using public elevation data, a published 2D hydraulic model on the GPU, and a 3D explorable view.",
   "type": "module",
-  "license": "MIT",
+  "license": "GPL-3.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/larrybillinger/waterflow"

@@ -1,6 +1,6 @@
 # Waterflow
 
-A dam-failure flood simulator that runs in a browser.
+A dam-failure flood simulator that runs in a browser. This copy is integrated as **Advanced Studio** within Waterflow v0.3.
 
 It pulls public elevation data for anywhere on Earth, lets you build a dam across a valley
 and fill the reservoir behind it, then fails that dam however you like and solves the
@@ -9,6 +9,8 @@ depths, flood widths, velocities and arrival times at measured increments down t
 and you can fly around the whole thing like a map.
 
 You can also drop a raft on the water and ride it downstream.
+
+**Real-terrain failures do not automatically invent geography.** To run the clearly labeled, fictional offline valley, explicitly add `?demo=1` to the Studio URL. Otherwise public DEM tile failures stop the load.
 
 **This is an estimate, not an engineering product.** See [Accuracy](#accuracy).
 
@@ -205,7 +207,7 @@ showing a blank screen.
 
 ## Licence
 
-MIT. See [LICENSE](LICENSE).
+GPL-3.0. See [LICENSE](LICENSE). The earlier MIT statement conflicted with the actual repository LICENSE and has been corrected.
 
 Elevation and imagery come from public sources and carry their own attribution, shown in
 the app and listed in [`docs/data-sources.md`](docs/data-sources.md).
