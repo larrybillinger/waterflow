@@ -81,7 +81,8 @@ jobs:
             sleep 2
           done
           grep -q '"status":"ok"' /tmp/waterflow-health.json
-          curl -fsS http://127.0.0.1:8086/ | grep -q 'id="map"'
+          curl -fsS http://127.0.0.1:8086/ > /tmp/waterflow-classic.html
+          grep -q 'id="map"' /tmp/waterflow-classic.html
           curl -fsS http://127.0.0.1:8086/studio/ > /tmp/waterflow-studio.html
           grep -q 'id="viewport"' /tmp/waterflow-studio.html
           grep -q './assets/' /tmp/waterflow-studio.html
