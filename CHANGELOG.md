@@ -1,5 +1,21 @@
 # Changelog
 
+## v0.3.0 — 2026-11-19
+
+### Added
+- Integrated Claude's separately developed Three.js/WebGL2 flood simulator as Advanced GPU Hydraulic Studio at /studio/.
+- Dam construction, reservoir storage and evolving breach geometry, GPU local-inertial solver, 3D water geometry and shaders, hydraulic profiles and hydrographs.
+- Additional terrain brushes, flood-path stations with velocities and widths, and cinematic raft cameras.
+- Bidirectional navigation between Studio and Classic without removing either implementation.
+- Multi-stage Docker build and additional CI jobs for GPU Studio linting, physics tests and static bundle build.
+- Persistent warning when GPU Studio is using synthetic terrain rather than geographic elevation.
+- Engine comparison and documented separate-state limitations.
+
+### Known issues
+- The two engines have separate scenario states and cannot automatically compare or import results.
+- Combined site still requires browser/WebGL/provider checks; physical accuracy remains uncalibrated.
+- Standalone GPU tile-cache proxy is not exposed through the combined Python server.
+
 ## v0.2.0 — 2026-11-19
 
 ### Added

@@ -1,7 +1,14 @@
 # Project state — 2026-11-19
 
-Current version: v0.2.0 experimental. Sprint 001 was merged into main and passed automated tests. Sprint 002 adds a cinematic passive water tracker with an illustrated raft/rider, chase camera, recorded path replay and CSV output. The feature is under review on feature/cinematic-flow-tracker-v0.2.
+Current version: v0.3.0 experimental integration.
+Active sprint: sprint-003.
+Branch: feature/integrate-gpu-hydraulic-studio-v0.3.
+GPU source: claude/flood-simulator commit 1445719f22388830c07f81d3044c9ffb0f52f345.
 
-Automated tests are configured for API, hydraulic solver, tracer integrator and JS syntax. Browser/WebGL manual validation, terrain-provider end-to-end testing, Docker deployment and hydraulic calibration are **not complete**. Do not portray this prototype as an operational flood warning or real-life raft safety model.
+Classic (MapLibre + Python DEM + JS worker) remains the default at /. GPU Studio (Three.js + browser WebGL2 hydraulics + its own renderer and UI) is built from studio/ and mounted at /studio/ by FastAPI. Both have independent run state, terrain edits and output formats. No scenario migration or shared numeric engine is implied.
 
-Future priorities: USGS 3DEP, reservoir geometry and breach hydrographs, verified 2D physics, synchronized time-indexed flood replay, 3D water geometry and actual movie recording.
+GPU Studio preserves Claude's reservoir, progressive breach, hydraulic roughness, GPU water routing, realistic 3D water visualization, levee/channel brushes, flow-path stations and cinematic camera tools.
+
+Automated CI builds both modes and runs their tests. Live browser, external imagery/DEM, Docker end-to-end and matched-model hydraulic calibration remain outstanding. Never use the outputs as validated dam-failure predictions or emergency guidance.
+
+Next steps: compare both engines on common DEMs, establish a scenario interchange format, choose a default UI after practical user testing, add real-world calibration and optionally synchronize video replay.

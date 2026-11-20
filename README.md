@@ -1,8 +1,19 @@
 # Waterflow
 
+**Two 3D modes on the same website:**
+
+| Mode | URL | Main strengths |
+| --- | --- | --- |
+| Classic 3D Lab | http://localhost:8086/ | MapLibre satellite/globe, point-discharge experiment, excavating terrain, raft tracer and path replay. |
+| Advanced GPU Hydraulic Studio | http://localhost:8086/studio/ | Three.js 3D water and terrain, embankment dam, reservoir filling, progressing breach, GPU flood solver, river-following stations, levees, extra camera shots, hydrographs and CSVs. |
+
+Switch using **GPU STUDIO** in Classic or **← Classic 3D** beside the Studio title. The two engines have independent state and scenarios. A map location, simulation or terrain edit does **not** automatically transfer when switching modes.
+
+The GPU Studio is imported from Claude's separate branch at commit 1445719f22388830c07f81d3044c9ffb0f52f345 and preserved as a self-contained studio/ application to avoid mixing incompatible Three.js shader physics with Classic's MapLibre renderer. See docs/engine-comparison.md.
+
 A full-screen, 3D, map-based terrain and flood experimentation lab. Fly across real-world terrain, excavate or raise land with a brush, release a hypothetical flow, and inspect animated depth, arrival time, and high-water levels.
 
-**Status: v0.2.0 experimental prototype. NOT a flood forecast, evacuation tool, or engineering-grade dam-break model.**
+**Status: v0.3.0 experimental integration. Both hydraulic engines remain unvalidated for real-world forecasts. NOT a flood forecast, evacuation tool, or engineering-grade dam-break model.**
 
 ## What works in v0.2
 
@@ -21,6 +32,32 @@ A full-screen, 3D, map-based terrain and flood experimentation lab. Fly across r
 - Replay/scrub the recorded route at selectable speed, or export the path as CSV. Movie mode is in-browser playback, not an MP4 exporter.
 
 ## Run locally
+
+**Docker — both modes at once:**
+
+    docker compose up -d --build
+
+Open Classic at http://localhost:8086/ or GPU Studio at http://localhost:8086/studio/. The default binding is 127.0.0.1.
+
+**Developer mode:**
+
+Run the existing Python server for Classic. To serve the GPU Studio under Python's /studio/ route, first run:
+
+    cd studio
+    npm ci
+    npm run build
+
+Then restart the Python server so it can mount studio/dist. Or start Studio independently via npm run dev (default port 8099). The Studio requires WebGL2 and EXT_color_buffer_float.
+
+**Validation:**
+
+    python -m pytest -q
+    node tests/flow-tracker-test.cjs
+    node tests/worker-test.cjs
+    cd studio && npm ci && npm run lint && npm test && npm run build
+
+GitHub Actions runs the backend and Studio checks. The Studio browser harness (npm run verify) requires Chrome/WebGL2 and is not part of ordinary CI.
+
 
 Requires Python 3.11+.
 
@@ -87,5 +124,10 @@ For credible real-world flood maps, integrate local USGS 3DEP 1 m/3 m terrain an
     docker compose up -d --build
 
 ## Known issues
+
+The engines cannot exchange active scenarios or numerical results. They use different initial conditions, flow boundary conditions and terrain grids. Do not imply their outputs are directly comparable or engineering validated.
+
+The GPU Studio displays a persistent warning when it falls back to synthetic terrain because real elevation tiles cannot be reached. Data produced over synthetic ground cannot represent actual local flooding. The combined deployment does not use Claude's optional Node tile proxy; Studio currently fetches public tiles directly.
+
 
 Requires external providers and WebGL. Fine terrain features smaller than model cells cannot be resolved. Flood fronts and lateral flows are qualitative approximations; documented validation is required before promoting any numerical results as real-world predictions.

@@ -14,3 +14,10 @@
 2026-11-19: Pace cinematic live model to approximately 8 simulated seconds per real second; preserve fast mode outside cinema.
 2026-11-19: Recorded route replay is path-only, does not rewind flood raster, and is not an MP4 export.
 2026-11-19: Keep latest 4,500 sampled points; treat depths under 0.1 m as stranded.
+
+2026-11-19: Sprint-003 keeps Claude's GPU solver as a separate studio/ app, not a risky in-place shader port into MapLibre.
+2026-11-19: Classic stays at /; GPU Studio is available at /studio/ on the same Python server and Docker host. Links navigate between them.
+2026-11-19: No implicit shared simulation state, terrain brush history, or numerical forecasts across the two engines.
+2026-11-19: Docker builds Studio with Node 22/Vite and copies static assets into the FastAPI image; Claude's optional Express tile proxy is not used.
+2026-11-19: Preserve upstream provenance at Claude commit 1445719f22388830c07f81d3044c9ffb0f52f345. Unit tests and source equations do not certify real-world accuracy.
+2026-11-19: Mark Studio synthetic elevation fallback persistently; Classic continues to fail if real DEM cannot be fetched.

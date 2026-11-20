@@ -14,3 +14,11 @@ MEDIUM: Coarse flux-derived velocities can misrepresent narrow channels, eddies 
 MEDIUM: Replay flood shading remains at last simulation frame; it is not a time-synchronized flood movie.
 MEDIUM: Frequent camera movement and route line redraw may be slow on mobile GPUs.
 MEDIUM: Route samples in memory are bounded and cleared on resets; no persisted video or scenario restoration.
+
+HIGH: Two hydraulic models can disagree due to different boundary conditions, wet/dry treatments, resolution, bed input, reservoir setup and roughness; compare only after matched benchmarks.
+HIGH: GPU Studio's synthetic fallback terrain is not a real geographic domain; a persistent disclaimer is mandatory.
+HIGH: Dam-breach regressions apply to limited historical categories and cannot predict any specific failure without site-specific engineering data.
+MEDIUM: GPU Studio requires WebGL2 with float render targets and may fail on older GPU/browser configurations.
+MEDIUM: Studio fetches public terrain/imagery directly in combined deployment; provider failures, CORS and rate limits may occur. Standalone Node tile proxy is not integrated.
+MEDIUM: Mode switch reloads the page, losing temporary in-memory state in the previous mode.
+MEDIUM: Two tech stacks increase dependency-maintenance and Docker-build overhead. Test each independently on CI.

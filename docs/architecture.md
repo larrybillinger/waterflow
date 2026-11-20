@@ -9,3 +9,13 @@ Flow: load area -> server assembles fixed-size real elevation grid -> client ini
 Data: elevations in meters relative to source DEM vertical datum (not guaranteed NAVD88); grid dimensions and coordinates from server; cell spacing approximated local WGS84 tangent plane in meters; simulation depths in meters; Q in m³/s and time in seconds. Geo coordinates are [longitude, latitude]. Pixel grid row zero is north, column zero west.
 
 Rendering: public imagery + map labels, maplibre raster-dem 3D geometry, transparent interpolated flood depth color raster. Edited DEM tiles use original Terrarium encoding. The water color is draped, NOT an elevated 3D fluid mesh. Satellite imagery itself does not reflect terrain excavation.
+
+## v0.3 dual engine integration
+
+The existing FastAPI/MapLibre Classic frontend remains at / and /static. Claude's independent project has been imported into studio/ from the original claude/flood-simulator branch, commit 1445719f22388830c07f81d3044c9ffb0f52f345.
+
+Docker first builds studio/ with Node 22 and Vite (relative asset base), then copies its dist/ into the existing Python image. FastAPI mounts the static bundle at /studio/. The browser executes the GPU Studio simulation entirely on WebGL2; the Python app does not run the GPU hydraulic solver. A direct-navigation link in each UI switches modes.
+
+Classic retains Python-hosted public DEM tiles, server-side terrain edit sessions and a JavaScript worker that routes prescribed discharge. GPU Studio directly fetches and resamples terrain tiles, constructs dam terrain/reservoir storage, runs progressing breaches in floating point GPU textures, and renders 3D terrain and a distinct water mesh through Three.js. Each keeps its own boundary conditions, grids, outputs and scenarios. There is no shared state or data interchange in v0.3.
+
+GPU Studio's standalone Express tile proxy exists in studio/server but is not active in the combined Python Docker container; the Vite build uses direct public URLs.

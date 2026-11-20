@@ -12,3 +12,11 @@ CI additionally executes Node worker tests that confirm finite/nonnegative depth
 Run node --check for web/app.js, web/simulation-worker.js, web/flow-tracker.js and web/movie.js. Run node tests/flow-tracker-test.cjs and node tests/worker-test.cjs, plus pytest -q. New tests cover flux-derived east movement, heading interpolation, dry-area stranding, bounding box exits, tracker acceptance/rejection and resets.
 
 Browser verification outstanding: inspect live source/wet placement, replay, pause/resume, three camera perspectives and free navigation, mobile HUD, map style toggle, editing reset, route CSV and performance. Test with actual terrain sources and WebGL. Automated unit tests do not validate flood hydraulics or 3D map rendering.
+
+## v0.3 integration checks
+
+CI: root pytest and Node hydraulic-worker/raft-tracer tests; GPU Studio npm ci, npm run lint, npm test and npm run build. The generated Studio production index must refer to relative ./assets/ paths.
+
+Manual testing still needed: Docker builds/runs; /api/health, / and /studio/ load; mode links work; Studio builds a dam, fills a pool, breaches it, renders raised 3D water and results; controls and cameras work on desktop and touch devices. Verify a totally failed elevation source clearly displays the persistent SYNTHETIC TERRAIN warning. Compare output with independent benchmarks and gauge observations before any accuracy claims.
+
+The original GPU Studio browser script, npm run verify, has not been run as part of standard integration CI and requires a configured browser with WebGL2.
