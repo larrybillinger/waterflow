@@ -20,3 +20,5 @@ CI: root pytest and Node hydraulic-worker/raft-tracer tests; GPU Studio npm ci, 
 Manual testing still needed: Docker builds/runs; /api/health, / and /studio/ load; mode links work; Studio builds a dam, fills a pool, breaches it, renders raised 3D water and results; controls and cameras work on desktop and touch devices. Verify a totally failed elevation source clearly displays the persistent SYNTHETIC TERRAIN warning. Compare output with independent benchmarks and gauge observations before any accuracy claims.
 
 The original GPU Studio browser script, npm run verify, has not been run as part of standard integration CI and requires a configured browser with WebGL2.
+
+GitHub Actions integration-smoke job now builds and launches the combined Docker image and fetches /api/health, /, /studio/, and a Vite JS asset. This verifies the production bundle is served at the expected route but does not verify Chrome WebGL rendering.

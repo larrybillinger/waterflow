@@ -1,0 +1,15 @@
+# Never copy local tool state, credentials or multi-gigabyte packages into Docker.
+.git
+.gitignore
+**/node_modules
+**/dist
+**/.env
+**/.venv
+**/.pytest_cache
+**/__pycache__
+**/*.pyc
+**/coverage
+**/verification
+**/.vite
+**/*.log
+.DS_Store

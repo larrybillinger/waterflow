@@ -8,7 +8,7 @@
 - [x] Studio's synthetic terrain fallback retains a persistent notice.
 - [x] Separate Studio lint/unit/build and Classic tests are configured in CI.
 - [ ] Live browser checks exercise all UI paths and real terrain providers under /studio/.
-- [ ] Full Docker smoke test performed with actual HTTP requests.
+- [x] Docker smoke test in GitHub Actions successfully built and fetched Classic, Studio and the Studio JavaScript bundle.
 - [ ] Identical-terrain numerical benchmark and observed-flood comparison completed.
 - [ ] Cross-engine scenario compatibility defined (explicitly deferred beyond v0.3).
 

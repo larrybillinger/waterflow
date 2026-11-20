@@ -15,7 +15,7 @@ A full-screen, 3D, map-based terrain and flood experimentation lab. Fly across r
 
 **Status: v0.3.0 experimental integration. Both hydraulic engines remain unvalidated for real-world forecasts. NOT a flood forecast, evacuation tool, or engineering-grade dam-break model.**
 
-## What works in v0.2
+## Classic 3D Lab features (preserved from v0.2)
 
 - Pitched, rotatable 3D earth-style map with satellite and street styles.
 - Public Mapzen/AWS elevation tiles provide the bare-earth digital elevation model (DEM); never substitute invented elevation on retrieval failures.
@@ -56,26 +56,18 @@ Then restart the Python server so it can mount studio/dist. Or start Studio inde
     node tests/worker-test.cjs
     cd studio && npm ci && npm run lint && npm test && npm run build
 
-GitHub Actions runs the backend and Studio checks. The Studio browser harness (npm run verify) requires Chrome/WebGL2 and is not part of ordinary CI.
+GitHub Actions runs Classic and Studio checks, plus a Docker smoke test that fetches both HTML pages and the Studio's JavaScript bundle. The Studio browser harness (npm run verify) requires Chrome/WebGL2 and is not part of ordinary CI.
 
-
-Requires Python 3.11+.
+**Classic Python development environment (Python 3.11+):**
 
     python -m venv .venv
     source .venv/bin/activate
     pip install -r requirements.txt
     uvicorn server.app:app --host 127.0.0.1 --port 8086
 
-On Windows use .venv\Scripts\activate instead. Open http://localhost:8086.
+On Windows, activate with .venv\Scripts\activate. External maps and elevation sources need internet access. Keep the default binding local-only unless you have added appropriate authentication and provider abuse protections.
 
-Alternatively:
-
-    docker compose up --build -d
-    docker compose logs -f
-
-Open http://localhost:8086. Change host port in compose before deploying alongside other apps. The default binding is local-only (127.0.0.1); make an intentional decision before exposing publicly. Internet access is needed for map styles, imagery, JavaScript CDN, and public DEM tiles.
-
-## Controls
+## Classic 3D Lab controls
 
 1. Navigate and rotate/tilt the 3D map. Choose a study area with **Load terrain**.
 2. Choose **Source** and click where water should enter the modeled domain.
